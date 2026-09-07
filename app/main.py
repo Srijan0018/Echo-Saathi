@@ -103,6 +103,26 @@ class PickupResponse(BaseModel):
     items: list[PickupItemRequest]
 
 
+class SettlementItem(BaseModel):
+    material_code: str = Field(min_length=2, max_length=30)
+    actual_weight_kg: Decimal = Field(gt=0, decimal_places=2)
+    quality_deduction_pct: Decimal = Field(ge=0, le=100, decimal_places=2)
+
+
+class SettlementRequest(BaseModel):
+    pickup_id: UUID
+    collector_id: UUID
+    otp_code: str = Field(min_length=4, max_length=4, pattern=r"^[0-9]{4}$")
+    items: list[SettlementItem] = Field(min_length=1, max_length=20)
+
+
+class SettlementResponse(BaseModel):
+    pickup_id: UUID
+    status: PickupStatus
+    payout_amount: Decimal
+    upi_reference: str
+
+
 class RouteStopRequest(BaseModel):
     stop_id: str = Field(min_length=1, max_length=50)
     weight_kg: Decimal = Field(gt=0, decimal_places=2)
@@ -258,6 +278,42 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
     )
     PICKUPS[pickup.id] = pickup
     return pickup
+
+
+@app.post(
+    "/api/v1/pickups/verify-and-settle",
+    response_model=SettlementResponse,
+    tags=["pickups"],
+)
+def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
+    pickup = PICKUPS.get(payload.pickup_id)
+    collector = USERS.get(payload.collector_id)
+    if pickup is None:
+        raise HTTPException(status_code=404, detail="pickup not found")
+    if collector is None or collector.role != UserRole.COLLECTOR:
+        raise HTTPException(status_code=404, detail="collector not found")
+    if pickup.status == PickupStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="pickup already settled")
+    if payload.otp_code != pickup.otp_code:
+        raise HTTPException(status_code=400, detail="invalid OTP")
+
+    catalog = {material.material_code: material for material in MATERIAL_CATALOG}
+    payout = Decimal("0.00")
+    for item in payload.items:
+        material = catalog.get(item.material_code)
+        if material is None:
+            raise HTTPException(status_code=422, detail=f"unknown material: {item.material_code}")
+        net_weight = item.actual_weight_kg * (Decimal("100") - item.quality_deduction_pct) / Decimal("100")
+        payout += net_weight * (material.aggregator_buy_rate - material.collector_margin)
+
+    completed_pickup = pickup.model_copy(update={"status": PickupStatus.COMPLETED})
+    PICKUPS[pickup.id] = completed_pickup
+    return SettlementResponse(
+        pickup_id=pickup.id,
+        status=PickupStatus.COMPLETED,
+        payout_amount=payout.quantize(Decimal("0.01")),
+        upi_reference=f"UPI-REF-{pickup.id.hex[:10].upper()}",
+    )
 
 
 @app.post("/api/v1/routing/optimize", response_model=list[RouteTripResponse], tags=["routing"])
