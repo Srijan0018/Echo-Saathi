@@ -163,6 +163,13 @@ class MunicipalSummary(BaseModel):
     fraud_audit_flags: int
 
 
+class AuditLogResponse(BaseModel):
+    collector_id: UUID
+    pickup_id: UUID
+    calculated_z_score: Decimal
+    flagged_reason: str
+
+
 class RagQuery(BaseModel):
     query: str = Field(min_length=3, max_length=500)
 
@@ -471,6 +478,11 @@ def municipality_summary() -> MunicipalSummary:
         active_collectors=sum(user.role == UserRole.COLLECTOR for user in USERS.values()),
         fraud_audit_flags=len(FRAUD_AUDIT_LOGS),
     )
+
+
+@app.get("/api/v1/municipality/audits", response_model=list[AuditLogResponse], tags=["municipality"])
+def municipality_audits() -> list[AuditLogResponse]:
+    return [AuditLogResponse(**audit) for audit in FRAUD_AUDIT_LOGS]
 
 
 @app.post("/api/v1/rag/query", response_model=RagResponse, tags=["regulatory"])
