@@ -1,13 +1,15 @@
 const formatKg = value => `${Number(value).toFixed(2)} kg`;
 
 async function loadDashboard() {
-  const [summaryResponse, materialsResponse] = await Promise.all([
+  const [summaryResponse, materialsResponse, auditsResponse] = await Promise.all([
     fetch('/api/v1/municipality/summary'),
-    fetch('/api/v1/materials')
+    fetch('/api/v1/materials'),
+    fetch('/api/v1/municipality/audits')
   ]);
-  if (!summaryResponse.ok || !materialsResponse.ok) throw new Error('Dashboard API unavailable');
+  if (!summaryResponse.ok || !materialsResponse.ok || !auditsResponse.ok) throw new Error('Dashboard API unavailable');
   const summary = await summaryResponse.json();
   const materials = await materialsResponse.json();
+  const audits = await auditsResponse.json();
 
   document.querySelector('#recovered-weight').textContent = formatKg(summary.recovered_weight_kg);
   document.querySelector('#batch-count').textContent = `${summary.processed_batches} batches`;
@@ -22,6 +24,8 @@ async function loadDashboard() {
       <div><span class="rate-name">${material.display_name}</span><span class="rate-code">${material.material_code}</span></div>
       <div><span class="rate-price">₹${Number(material.aggregator_buy_rate).toFixed(2)}</span><span class="rate-margin">margin ₹${Number(material.collector_margin).toFixed(2)}</span></div>
     </div>`).join('');
+  document.querySelector('#audit-list').innerHTML = audits.length ? audits.map(audit => `
+    <div class="audit-row"><span class="audit-mark">!</span><div><strong>${audit.flagged_reason.replaceAll('_', ' ')}</strong><small>Collector ${audit.collector_id.slice(0, 8)} · Pickup ${audit.pickup_id.slice(0, 8)}</small></div><span class="audit-score">Z ${audit.calculated_z_score}</span></div>`).join('') : '<div class="audit-empty">No flags in the review queue.</div>';
 }
 
 loadDashboard().catch(() => {
