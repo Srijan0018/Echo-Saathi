@@ -7,6 +7,8 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.routing import RouteStop, optimize_routes
+
 
 class Material(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -99,6 +101,26 @@ class PickupResponse(BaseModel):
     status: PickupStatus
     otp_code: str
     items: list[PickupItemRequest]
+
+
+class RouteStopRequest(BaseModel):
+    stop_id: str = Field(min_length=1, max_length=50)
+    weight_kg: Decimal = Field(gt=0, decimal_places=2)
+    volume_m3: Decimal = Field(gt=0, decimal_places=3)
+
+
+class RouteOptimizeRequest(BaseModel):
+    collector_id: UUID
+    max_payload_kg: Decimal = Field(gt=0, decimal_places=2)
+    max_volume_m3: Decimal = Field(gt=0, decimal_places=3)
+    stops: list[RouteStopRequest] = Field(min_length=1, max_length=9)
+
+
+class RouteTripResponse(BaseModel):
+    stop_ids: tuple[str, ...]
+    weight_kg: Decimal
+    volume_m3: Decimal
+    returned_to_depot: bool
 
 
 MATERIAL_CATALOG: tuple[Material, ...] = (
@@ -236,6 +258,29 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
     )
     PICKUPS[pickup.id] = pickup
     return pickup
+
+
+@app.post("/api/v1/routing/optimize", response_model=list[RouteTripResponse], tags=["routing"])
+def optimize_collector_route(payload: RouteOptimizeRequest) -> list[RouteTripResponse]:
+    collector = USERS.get(payload.collector_id)
+    if collector is None or collector.role != UserRole.COLLECTOR:
+        raise HTTPException(status_code=404, detail="collector not found")
+    try:
+        trips = optimize_routes(
+            [
+                RouteStop(
+                    stop_id=stop.stop_id,
+                    weight_kg=stop.weight_kg,
+                    volume_m3=stop.volume_m3,
+                )
+                for stop in payload.stops
+            ],
+            payload.max_payload_kg,
+            payload.max_volume_m3,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    return [RouteTripResponse(**trip.__dict__) for trip in trips]
 
 
 @app.get("/api/v1/materials", response_model=list[Material], tags=["materials"])
