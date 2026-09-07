@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.fraud import assess_discrepancy
 from app.routing import RouteStop, optimize_routes
 
 
@@ -121,6 +122,8 @@ class SettlementResponse(BaseModel):
     status: PickupStatus
     payout_amount: Decimal
     upi_reference: str
+    audit_flagged: bool
+    z_score: Decimal
 
 
 class RouteStopRequest(BaseModel):
@@ -180,6 +183,8 @@ MATERIAL_CATALOG: tuple[Material, ...] = (
 
 USERS: dict[UUID, User] = {}
 PICKUPS: dict[UUID, PickupResponse] = {}
+DISCREPANCIES: dict[UUID, list[Decimal]] = {}
+FRAUD_AUDIT_LOGS: list[dict[str, str | Decimal | UUID]] = []
 KYC_SALT = "kabadiwala-connect-demo"
 
 app = FastAPI(
@@ -298,21 +303,42 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
         raise HTTPException(status_code=400, detail="invalid OTP")
 
     catalog = {material.material_code: material for material in MATERIAL_CATALOG}
+    estimated = {item.material_code: item.ai_estimated_kg for item in pickup.items}
     payout = Decimal("0.00")
+    assessments = []
     for item in payload.items:
         material = catalog.get(item.material_code)
         if material is None:
             raise HTTPException(status_code=422, detail=f"unknown material: {item.material_code}")
+        if item.material_code not in estimated:
+            raise HTTPException(status_code=422, detail=f"material not requested: {item.material_code}")
         net_weight = item.actual_weight_kg * (Decimal("100") - item.quality_deduction_pct) / Decimal("100")
         payout += net_weight * (material.aggregator_buy_rate - material.collector_margin)
+        discrepancy = item.actual_weight_kg - estimated[item.material_code]
+        history = DISCREPANCIES.setdefault(payload.collector_id, [])
+        assessment = assess_discrepancy(history, discrepancy, estimated[item.material_code])
+        history.append(discrepancy)
+        assessments.append(assessment)
+        if assessment.flagged:
+            FRAUD_AUDIT_LOGS.append(
+                {
+                    "collector_id": payload.collector_id,
+                    "pickup_id": pickup.id,
+                    "calculated_z_score": assessment.z_score,
+                    "flagged_reason": assessment.reason or "audit",
+                }
+            )
 
     completed_pickup = pickup.model_copy(update={"status": PickupStatus.COMPLETED})
     PICKUPS[pickup.id] = completed_pickup
+    audit_flagged = any(assessment.flagged for assessment in assessments)
     return SettlementResponse(
         pickup_id=pickup.id,
         status=PickupStatus.COMPLETED,
         payout_amount=payout.quantize(Decimal("0.01")),
         upi_reference=f"UPI-REF-{pickup.id.hex[:10].upper()}",
+        audit_flagged=audit_flagged,
+        z_score=max((assessment.z_score for assessment in assessments), default=Decimal("0.00")),
     )
 
 
