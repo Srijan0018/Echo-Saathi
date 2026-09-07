@@ -1,7 +1,10 @@
 from decimal import Decimal
+from enum import StrEnum
+from hashlib import sha256
 from typing import Annotated
+from uuid import UUID, uuid4
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -14,6 +17,45 @@ class Material(BaseModel):
     collector_margin: Decimal = Field(gt=0, decimal_places=2)
     density_kg_per_m3: Decimal = Field(gt=0, decimal_places=2)
     co2e_factor: Decimal = Field(gt=0, decimal_places=3)
+
+
+class UserRole(StrEnum):
+    CITIZEN = "citizen"
+    COLLECTOR = "collector"
+    AGGREGATOR = "aggregator"
+    RECYCLER = "recycler"
+    ADMIN = "admin"
+
+
+class RegisterRequest(BaseModel):
+    phone: str = Field(min_length=10, max_length=15, pattern=r"^\+?[0-9]{10,14}$")
+    full_name: str = Field(min_length=2, max_length=100)
+    role: UserRole
+    upi_id: str | None = Field(default=None, max_length=50)
+
+
+class User(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    phone: str
+    full_name: str
+    role: UserRole
+    upi_id: str | None = None
+    dpi_kyc_verified: bool = False
+    dpi_kyc_ref_hash: str | None = None
+
+
+class KycRequest(BaseModel):
+    user_id: UUID
+    reference_token: str = Field(min_length=8, max_length=100)
+
+
+class KycResponse(BaseModel):
+    status: str
+    kyc_id: str
+    name_match: bool
+    user_id: UUID
 
 
 MATERIAL_CATALOG: tuple[Material, ...] = (
@@ -51,6 +93,9 @@ MATERIAL_CATALOG: tuple[Material, ...] = (
     ),
 )
 
+USERS: dict[UUID, User] = {}
+KYC_SALT = "kabadiwala-connect-demo"
+
 app = FastAPI(
     title="Kabadiwala Connect OS",
     version="0.1.0",
@@ -66,6 +111,42 @@ def root() -> dict[str, str]:
 @app.get("/health", tags=["system"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/api/v1/auth/register", response_model=User, status_code=201, tags=["auth"])
+def register_user(payload: RegisterRequest) -> User:
+    if any(user.phone == payload.phone for user in USERS.values()):
+        raise HTTPException(status_code=409, detail="phone already registered")
+    user = User(
+        id=uuid4(),
+        phone=payload.phone,
+        full_name=payload.full_name,
+        role=payload.role,
+        upi_id=payload.upi_id,
+    )
+    USERS[user.id] = user
+    return user
+
+
+@app.post("/api/v1/dpi/verify-kyc", response_model=KycResponse, tags=["dpi"])
+def verify_kyc(payload: KycRequest) -> KycResponse:
+    user = USERS.get(payload.user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    token_hash = sha256(f"{KYC_SALT}:{payload.reference_token}".encode()).hexdigest()
+    verified_user = user.model_copy(
+        update={
+            "dpi_kyc_verified": True,
+            "dpi_kyc_ref_hash": token_hash,
+        }
+    )
+    USERS[user.id] = verified_user
+    return KycResponse(
+        status="VERIFIED",
+        kyc_id=f"DPI-KYC-{user.id.hex[:8].upper()}",
+        name_match=True,
+        user_id=user.id,
+    )
 
 
 @app.get("/api/v1/materials", response_model=list[Material], tags=["materials"])
