@@ -18,3 +18,7 @@ Open `http://127.0.0.1:8000/dashboard/` for the municipal operations dashboard, 
 ```powershell
 pytest
 ```
+
+## Persistence schema
+
+The demo API currently uses deterministic in-memory state. The PostgreSQL 16/PostGIS target schema is available at `db/schema.sql` for the persistence integration phase.
