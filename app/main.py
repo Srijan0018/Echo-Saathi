@@ -148,6 +148,7 @@ class BatchResponse(BaseModel):
     status: BatchStatus
     co2e_avoided_kg: Decimal = Decimal("0.00")
     cpcb_epr_token: str | None = None
+    digilocker_doc_uri: str | None = None
 
 
 class RecycleRequest(BaseModel):
@@ -461,6 +462,7 @@ def recycle_batch(batch_id: UUID, payload: RecycleRequest) -> BatchResponse:
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             ),
             "cpcb_epr_token": f"EPR-{batch.batch_hash[:12].upper()}",
+            "digilocker_doc_uri": f"digilocker://issuer/kabadiwala/batches/{batch.batch_id}",
         }
     )
     BATCHES[batch_id] = processed

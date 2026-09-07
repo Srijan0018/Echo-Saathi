@@ -60,3 +60,4 @@ def test_batch_aggregation_and_recycling_issue_outputs() -> None:
     assert recycled.json()["net_weight_kg"] == "4.50"
     assert recycled.json()["cpcb_epr_token"].startswith("EPR-")
     assert recycled.json()["co2e_avoided_kg"] == "6.53"
+    assert recycled.json()["digilocker_doc_uri"].startswith("digilocker://issuer/kabadiwala/batches/")
