@@ -126,6 +126,33 @@ class SettlementResponse(BaseModel):
     z_score: Decimal
 
 
+class BatchStatus(StrEnum):
+    CREATED = "created"
+    PROCESSED = "processed"
+
+
+class BatchAggregateRequest(BaseModel):
+    aggregator_id: UUID
+    material_code: str = Field(min_length=2, max_length=30)
+    pickup_ids: list[UUID] = Field(min_length=1, max_length=100)
+
+
+class BatchResponse(BaseModel):
+    batch_id: UUID
+    batch_hash: str
+    material_code: str
+    gross_weight_kg: Decimal
+    net_weight_kg: Decimal
+    status: BatchStatus
+    co2e_avoided_kg: Decimal = Decimal("0.00")
+    cpcb_epr_token: str | None = None
+
+
+class RecycleRequest(BaseModel):
+    moisture_deduction_pct: Decimal = Field(ge=0, le=100, decimal_places=2)
+    foreign_matter_deduction_pct: Decimal = Field(ge=0, le=100, decimal_places=2)
+
+
 class RouteStopRequest(BaseModel):
     stop_id: str = Field(min_length=1, max_length=50)
     weight_kg: Decimal = Field(gt=0, decimal_places=2)
@@ -185,6 +212,8 @@ USERS: dict[UUID, User] = {}
 PICKUPS: dict[UUID, PickupResponse] = {}
 DISCREPANCIES: dict[UUID, list[Decimal]] = {}
 FRAUD_AUDIT_LOGS: list[dict[str, str | Decimal | UUID]] = []
+SETTLED_WEIGHTS: dict[UUID, dict[str, Decimal]] = {}
+BATCHES: dict[UUID, BatchResponse] = {}
 KYC_SALT = "kabadiwala-connect-demo"
 
 app = FastAPI(
@@ -331,6 +360,7 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
 
     completed_pickup = pickup.model_copy(update={"status": PickupStatus.COMPLETED})
     PICKUPS[pickup.id] = completed_pickup
+    SETTLED_WEIGHTS[pickup.id] = {item.material_code: item.actual_weight_kg for item in payload.items}
     audit_flagged = any(assessment.flagged for assessment in assessments)
     return SettlementResponse(
         pickup_id=pickup.id,
@@ -340,6 +370,62 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
         audit_flagged=audit_flagged,
         z_score=max((assessment.z_score for assessment in assessments), default=Decimal("0.00")),
     )
+
+
+@app.post("/api/v1/batches/aggregate", response_model=BatchResponse, status_code=201, tags=["batches"])
+def aggregate_batch(payload: BatchAggregateRequest) -> BatchResponse:
+    aggregator = USERS.get(payload.aggregator_id)
+    if aggregator is None or aggregator.role != UserRole.AGGREGATOR:
+        raise HTTPException(status_code=404, detail="aggregator not found")
+    if not any(material.material_code == payload.material_code for material in MATERIAL_CATALOG):
+        raise HTTPException(status_code=422, detail="unknown material")
+    weights: list[Decimal] = []
+    for pickup_id in payload.pickup_ids:
+        pickup = PICKUPS.get(pickup_id)
+        if pickup is None or pickup.status != PickupStatus.COMPLETED:
+            raise HTTPException(status_code=422, detail=f"pickup not settled: {pickup_id}")
+        weight = SETTLED_WEIGHTS.get(pickup_id, {}).get(payload.material_code)
+        if weight is None:
+            raise HTTPException(status_code=422, detail=f"material not settled: {pickup_id}")
+        weights.append(weight)
+    gross_weight = sum(weights, Decimal("0")).quantize(Decimal("0.01"))
+    batch_id = uuid4()
+    batch_hash = sha256(
+        f"{batch_id}:{payload.aggregator_id}:{payload.material_code}:{gross_weight}".encode()
+    ).hexdigest()
+    batch = BatchResponse(
+        batch_id=batch_id,
+        batch_hash=batch_hash,
+        material_code=payload.material_code,
+        gross_weight_kg=gross_weight,
+        net_weight_kg=gross_weight,
+        status=BatchStatus.CREATED,
+    )
+    BATCHES[batch_id] = batch
+    return batch
+
+
+@app.put("/api/v1/batches/{batch_id}/recycle", response_model=BatchResponse, tags=["batches"])
+def recycle_batch(batch_id: UUID, payload: RecycleRequest) -> BatchResponse:
+    batch = BATCHES.get(batch_id)
+    if batch is None:
+        raise HTTPException(status_code=404, detail="batch not found")
+    if batch.status == BatchStatus.PROCESSED:
+        raise HTTPException(status_code=409, detail="batch already processed")
+    net_weight = batch.gross_weight_kg * (
+        Decimal("100") - payload.moisture_deduction_pct - payload.foreign_matter_deduction_pct
+    ) / Decimal("100")
+    material = next(item for item in MATERIAL_CATALOG if item.material_code == batch.material_code)
+    processed = batch.model_copy(
+        update={
+            "net_weight_kg": net_weight.quantize(Decimal("0.01")),
+            "status": BatchStatus.PROCESSED,
+            "co2e_avoided_kg": (net_weight * material.co2e_factor).quantize(Decimal("0.01")),
+            "cpcb_epr_token": f"EPR-{batch.batch_hash[:12].upper()}",
+        }
+    )
+    BATCHES[batch_id] = processed
+    return processed
 
 
 @app.post("/api/v1/routing/optimize", response_model=list[RouteTripResponse], tags=["routing"])
