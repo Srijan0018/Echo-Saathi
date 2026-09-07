@@ -247,6 +247,7 @@ app = FastAPI(
     description="Deterministic circular-economy operations API.",
 )
 app.mount("/dashboard", StaticFiles(directory="frontend", html=True), name="dashboard")
+app.mount("/citizen", StaticFiles(directory="frontend", html=True), name="citizen")
 
 
 @app.get("/", tags=["system"])

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kabadiwala Connect | Book a Pickup</title>
+  <link rel="stylesheet" href="/dashboard/styles.css">
+  <style>
+    .citizen-wrap{max-width:980px;margin:0 auto;padding:34px 5vw}.back{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.citizen-head{margin:52px 0 34px}.citizen-head h1{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.05em;margin:12px 0}.citizen-head h1 em{color:var(--green);font-style:normal}.work-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-panel{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px}.form-panel h2{font-size:18px;margin:8px 0 22px}.field{display:grid;gap:7px;margin-bottom:16px}.field label{font:10px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.field input{border:1px solid var(--line);padding:13px;border-radius:4px;font:13px Manrope,sans-serif;color:var(--ink);background:#fbfcfa}.file-box{border:1px dashed #a9c6b3;border-radius:4px;background:#f1f8f1;padding:24px;text-align:center;margin-bottom:16px}.file-box input{max-width:100%;font-size:11px}.button{border:0;border-radius:4px;background:var(--green);color:white;padding:14px 18px;font:700 12px Manrope,sans-serif;cursor:pointer;width:100%}.button:disabled{opacity:.55;cursor:not-allowed}.result{margin-top:16px;background:#eff8ee;border:1px solid #cae8ca;padding:15px;border-radius:4px;font-size:12px;display:none}.result.show{display:block}.result strong,.result small{display:block}.result small{color:var(--muted);margin-top:5px}.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.chip{background:var(--mint);color:var(--green);border-radius:3px;padding:7px 9px;font:10px 'DM Mono',monospace}.notice{color:var(--muted);font-size:12px;line-height:1.6}.error{color:#a34b40;background:#fff0ec;border-color:#f0c5bb}.otp{font:500 26px 'DM Mono',monospace;color:var(--green);letter-spacing:.15em}@media(max-width:700px){.citizen-wrap{padding:24px 20px}.citizen-head{margin:38px 0 26px}.work-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="citizen-wrap">
+    <a class="back" href="/dashboard/">← MUNICIPAL VIEW</a>
+    <header class="citizen-head"><p class="eyebrow accent">Citizen pickup desk</p><h1>Turn a pile into<br><em>a verified handoff.</em></h1><p class="notice">Scan your recyclables, see the indicative mix, and request a collector pickup.</p></header>
+    <section class="work-grid">
+      <article class="form-panel"><p class="eyebrow">Step 01 / Identify</p><h2>Tell us about you</h2><div class="field"><label for="name">Full name</label><input id="name" value="Asha Devi" autocomplete="name"></div><div class="field"><label for="phone">Mobile number</label><input id="phone" value="+919876543210" inputmode="tel"></div><div class="file-box"><p class="notice">Add a photo of the recyclables</p><input id="photo" type="file" accept="image/*"></div><button class="button" id="scan">Scan materials</button><div class="result" id="scan-result"></div></article>
+      <article class="form-panel"><p class="eyebrow">Step 02 / Arrange</p><h2>Request your pickup</h2><p class="notice">Your collector will confirm the final scale reading with a four-digit citizen OTP.</p><div class="field"><label for="latitude">Latitude</label><input id="latitude" value="12.971600"></div><div class="field"><label for="longitude">Longitude</label><input id="longitude" value="77.594600"></div><button class="button" id="book" disabled>Book collector pickup</button><div class="result" id="book-result"></div></article>
+    </section>
+  </main>
+  <script src="/dashboard/citizen.js"></script>
+</body>
+</html>
