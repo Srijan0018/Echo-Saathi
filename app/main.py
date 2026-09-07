@@ -4,7 +4,7 @@ from hashlib import sha256
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -56,6 +56,19 @@ class KycResponse(BaseModel):
     kyc_id: str
     name_match: bool
     user_id: UUID
+
+
+class DetectedMaterial(BaseModel):
+    material_code: str
+    confidence: Decimal = Field(ge=0, le=1, decimal_places=2)
+    estimated_kg: Decimal = Field(gt=0, decimal_places=2)
+
+
+class ClassificationResponse(BaseModel):
+    detected_materials: list[DetectedMaterial]
+    contamination_detected: bool
+    confidence_score: Decimal = Field(ge=0, le=1, decimal_places=2)
+    fallback_used: bool
 
 
 MATERIAL_CATALOG: tuple[Material, ...] = (
@@ -146,6 +159,33 @@ def verify_kyc(payload: KycRequest) -> KycResponse:
         kyc_id=f"DPI-KYC-{user.id.hex[:8].upper()}",
         name_match=True,
         user_id=user.id,
+    )
+
+
+@app.post(
+    "/api/v1/ai/classify-waste",
+    response_model=ClassificationResponse,
+    tags=["ai"],
+)
+async def classify_waste(image: UploadFile = File(...)) -> ClassificationResponse:
+    if not image.filename:
+        raise HTTPException(status_code=400, detail="image filename is required")
+    return ClassificationResponse(
+        detected_materials=[
+            DetectedMaterial(
+                material_code="pet_plastic",
+                confidence=Decimal("0.94"),
+                estimated_kg=Decimal("4.50"),
+            ),
+            DetectedMaterial(
+                material_code="cardboard",
+                confidence=Decimal("0.88"),
+                estimated_kg=Decimal("3.00"),
+            ),
+        ],
+        contamination_detected=False,
+        confidence_score=Decimal("0.91"),
+        fallback_used=True,
     )
 
 
