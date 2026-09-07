@@ -71,6 +71,36 @@ class ClassificationResponse(BaseModel):
     fallback_used: bool
 
 
+class PickupStatus(StrEnum):
+    REQUESTED = "requested"
+    ASSIGNED = "assigned"
+    EN_ROUTE = "en_route"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class PickupItemRequest(BaseModel):
+    material_code: str = Field(min_length=2, max_length=30)
+    ai_estimated_kg: Decimal = Field(gt=0, decimal_places=2)
+
+
+class PickupRequest(BaseModel):
+    citizen_id: UUID
+    latitude: Decimal = Field(ge=Decimal("-90"), le=Decimal("90"), decimal_places=6)
+    longitude: Decimal = Field(ge=Decimal("-180"), le=Decimal("180"), decimal_places=6)
+    items: list[PickupItemRequest] = Field(min_length=1, max_length=20)
+    is_rwa_drive: bool = False
+    rwa_name: str | None = Field(default=None, max_length=100)
+
+
+class PickupResponse(BaseModel):
+    id: UUID
+    citizen_id: UUID
+    status: PickupStatus
+    otp_code: str
+    items: list[PickupItemRequest]
+
+
 MATERIAL_CATALOG: tuple[Material, ...] = (
     Material(
         material_code="pet_plastic",
@@ -107,6 +137,7 @@ MATERIAL_CATALOG: tuple[Material, ...] = (
 )
 
 USERS: dict[UUID, User] = {}
+PICKUPS: dict[UUID, PickupResponse] = {}
 KYC_SALT = "kabadiwala-connect-demo"
 
 app = FastAPI(
@@ -187,6 +218,24 @@ async def classify_waste(image: UploadFile = File(...)) -> ClassificationRespons
         confidence_score=Decimal("0.91"),
         fallback_used=True,
     )
+
+
+@app.post("/api/v1/pickups/request", response_model=PickupResponse, status_code=201, tags=["pickups"])
+def request_pickup(payload: PickupRequest) -> PickupResponse:
+    if payload.citizen_id not in USERS:
+        raise HTTPException(status_code=404, detail="citizen not found")
+    for item in payload.items:
+        if not any(material.material_code == item.material_code for material in MATERIAL_CATALOG):
+            raise HTTPException(status_code=422, detail=f"unknown material: {item.material_code}")
+    pickup = PickupResponse(
+        id=uuid4(),
+        citizen_id=payload.citizen_id,
+        status=PickupStatus.REQUESTED,
+        otp_code="4826",
+        items=payload.items,
+    )
+    PICKUPS[pickup.id] = pickup
+    return pickup
 
 
 @app.get("/api/v1/materials", response_model=list[Material], tags=["materials"])
