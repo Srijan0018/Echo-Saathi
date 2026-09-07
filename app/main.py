@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.fraud import assess_discrepancy
+from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
 
 
@@ -159,6 +160,21 @@ class MunicipalSummary(BaseModel):
     processed_batches: int
     active_collectors: int
     fraud_audit_flags: int
+
+
+class RagQuery(BaseModel):
+    query: str = Field(min_length=3, max_length=500)
+
+
+class RagCitation(BaseModel):
+    title: str
+    citation: str
+    text: str
+
+
+class RagResponse(BaseModel):
+    answer: str
+    citations: list[RagCitation]
 
 
 class RouteStopRequest(BaseModel):
@@ -447,6 +463,20 @@ def municipality_summary() -> MunicipalSummary:
         processed_batches=len(processed_batches),
         active_collectors=sum(user.role == UserRole.COLLECTOR for user in USERS.values()),
         fraud_audit_flags=len(FRAUD_AUDIT_LOGS),
+    )
+
+
+@app.post("/api/v1/rag/query", response_model=RagResponse, tags=["regulatory"])
+def regulatory_query(payload: RagQuery) -> RagResponse:
+    matches = query_regulations(payload.query)
+    if not matches:
+        return RagResponse(
+            answer="No indexed rule matched this query. Consult the relevant CPCB notification.",
+            citations=[],
+        )
+    return RagResponse(
+        answer=" ".join(chunk.text for chunk in matches),
+        citations=[RagCitation(title=chunk.title, citation=chunk.citation, text=chunk.text) for chunk in matches],
     )
 
 
