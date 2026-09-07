@@ -1,10 +1,11 @@
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from enum import StrEnum
 from hashlib import sha256
 from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.fraud import assess_discrepancy
@@ -245,6 +246,7 @@ app = FastAPI(
     version="0.1.0",
     description="Deterministic circular-economy operations API.",
 )
+app.mount("/dashboard", StaticFiles(directory="frontend", html=True), name="dashboard")
 
 
 @app.get("/", tags=["system"])
@@ -444,7 +446,9 @@ def recycle_batch(batch_id: UUID, payload: RecycleRequest) -> BatchResponse:
         update={
             "net_weight_kg": net_weight.quantize(Decimal("0.01")),
             "status": BatchStatus.PROCESSED,
-            "co2e_avoided_kg": (net_weight * material.co2e_factor).quantize(Decimal("0.01")),
+            "co2e_avoided_kg": (net_weight * material.co2e_factor).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            ),
             "cpcb_epr_token": f"EPR-{batch.batch_hash[:12].upper()}",
         }
     )
