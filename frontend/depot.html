@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kabadiwala Connect | Depot Console</title>
+  <link rel="stylesheet" href="/dashboard/styles.css">
+  <style>
+    .depot-wrap{max-width:980px;margin:0 auto;padding:34px 5vw}.back{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.depot-head{margin:52px 0 34px}.depot-head h1{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.05em;margin:12px 0}.depot-head h1 em{color:var(--green);font-style:normal}.workflow{display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px}.panel h2{font-size:18px;margin:8px 0 22px}.field{display:grid;gap:7px;margin-bottom:15px}.field label{font:10px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.field input{border:1px solid var(--line);padding:13px;border-radius:4px;font:13px Manrope,sans-serif;color:var(--ink);background:#fbfcfa}.button{border:0;border-radius:4px;background:var(--green);color:#fff;padding:14px 18px;font:700 12px Manrope,sans-serif;cursor:pointer;width:100%}.button:disabled{opacity:.55}.result{margin-top:16px;background:#eff8ee;border:1px solid #cae8ca;padding:15px;border-radius:4px;font-size:12px;display:none}.result.show{display:block}.result.error{background:#fff0ec;border-color:#f0c5bb;color:#a34b40}.result strong,.result small{display:block}.result small{color:var(--muted);margin-top:5px}.token{font:500 20px 'DM Mono',monospace;color:var(--green);word-break:break-all;margin-top:12px}.notice{color:var(--muted);font-size:12px;line-height:1.6}@media(max-width:700px){.depot-wrap{padding:24px 20px}.depot-head{margin:38px 0 26px}.workflow{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="depot-wrap">
+    <a class="back" href="/dashboard/">← MUNICIPAL VIEW</a>
+    <header class="depot-head"><p class="eyebrow accent">Depot / recycler console</p><h1>Make the chain<br><em>auditable.</em></h1><p class="notice">Aggregate verified pickups into a freight batch, then record what the recycler actually received.</p></header>
+    <section class="workflow">
+      <article class="panel"><p class="eyebrow">Step 01 / Aggregate</p><h2>Create freight batch</h2><div class="field"><label for="aggregator">Aggregator ID</label><input id="aggregator" placeholder="UUID from registration"></div><div class="field"><label for="material">Material code</label><input id="material" value="pet_plastic"></div><div class="field"><label for="pickups">Settled pickup IDs</label><input id="pickups" placeholder="UUID, UUID"></div><button class="button" id="aggregate">Create batch manifest</button><div class="result" id="aggregate-result"></div></article>
+      <article class="panel"><p class="eyebrow">Step 02 / Verify</p><h2>Process at recycler</h2><div class="field"><label for="batch">Batch ID</label><input id="batch" placeholder="Created batch UUID"></div><div class="field"><label for="moisture">Moisture deduction (%)</label><input id="moisture" value="0.00"></div><div class="field"><label for="foreign">Foreign matter deduction (%)</label><input id="foreign" value="0.00"></div><button class="button" id="recycle">Confirm processing</button><div class="result" id="recycle-result"></div></article>
+    </section>
+  </main>
+  <script src="/dashboard/depot.js"></script>
+</body>
+</html>
