@@ -52,3 +52,17 @@ def test_unknown_kyc_user_is_rejected() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_citizen_cannot_complete_collector_kyc() -> None:
+    registration = client.post(
+        "/api/v1/auth/register",
+        json={"phone": "+919876543210", "full_name": "Asha Devi", "role": "citizen"},
+    ).json()
+
+    response = client.post(
+        "/api/v1/dpi/verify-kyc",
+        json={"user_id": registration["id"], "reference_token": "DPI-MOCK-TOKEN"},
+    )
+
+    assert response.status_code == 403

@@ -291,6 +291,8 @@ def verify_kyc(payload: KycRequest) -> KycResponse:
     user = USERS.get(payload.user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")
+    if user.role != UserRole.COLLECTOR:
+        raise HTTPException(status_code=403, detail="only collectors can complete DPI KYC")
     token_hash = sha256(f"{KYC_SALT}:{payload.reference_token}".encode()).hexdigest()
     verified_user = user.model_copy(
         update={
@@ -336,8 +338,11 @@ async def classify_waste(image: UploadFile = File(...)) -> ClassificationRespons
 
 @app.post("/api/v1/pickups/request", response_model=PickupResponse, status_code=201, tags=["pickups"])
 def request_pickup(payload: PickupRequest) -> PickupResponse:
-    if payload.citizen_id not in USERS:
+    citizen = USERS.get(payload.citizen_id)
+    if citizen is None:
         raise HTTPException(status_code=404, detail="citizen not found")
+    if citizen.role != UserRole.CITIZEN:
+        raise HTTPException(status_code=403, detail="only citizens can request pickups")
     for item in payload.items:
         if not any(material.material_code == item.material_code for material in MATERIAL_CATALOG):
             raise HTTPException(status_code=422, detail=f"unknown material: {item.material_code}")
