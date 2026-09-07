@@ -153,6 +153,14 @@ class RecycleRequest(BaseModel):
     foreign_matter_deduction_pct: Decimal = Field(ge=0, le=100, decimal_places=2)
 
 
+class MunicipalSummary(BaseModel):
+    pickups_completed: int
+    recovered_weight_kg: Decimal
+    processed_batches: int
+    active_collectors: int
+    fraud_audit_flags: int
+
+
 class RouteStopRequest(BaseModel):
     stop_id: str = Field(min_length=1, max_length=50)
     weight_kg: Decimal = Field(gt=0, decimal_places=2)
@@ -426,6 +434,20 @@ def recycle_batch(batch_id: UUID, payload: RecycleRequest) -> BatchResponse:
     )
     BATCHES[batch_id] = processed
     return processed
+
+
+@app.get("/api/v1/municipality/summary", response_model=MunicipalSummary, tags=["municipality"])
+def municipality_summary() -> MunicipalSummary:
+    processed_batches = [batch for batch in BATCHES.values() if batch.status == BatchStatus.PROCESSED]
+    return MunicipalSummary(
+        pickups_completed=sum(pickup.status == PickupStatus.COMPLETED for pickup in PICKUPS.values()),
+        recovered_weight_kg=sum(
+            (batch.net_weight_kg for batch in processed_batches), Decimal("0.00")
+        ).quantize(Decimal("0.01")),
+        processed_batches=len(processed_batches),
+        active_collectors=sum(user.role == UserRole.COLLECTOR for user in USERS.values()),
+        fraud_audit_flags=len(FRAUD_AUDIT_LOGS),
+    )
 
 
 @app.post("/api/v1/routing/optimize", response_model=list[RouteTripResponse], tags=["routing"])
