@@ -248,6 +248,7 @@ app = FastAPI(
 )
 app.mount("/dashboard", StaticFiles(directory="frontend", html=True), name="dashboard")
 app.mount("/citizen", StaticFiles(directory="frontend", html=True), name="citizen")
+app.mount("/collector", StaticFiles(directory="frontend", html=True), name="collector")
 
 
 @app.get("/", tags=["system"])

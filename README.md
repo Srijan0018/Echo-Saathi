@@ -11,7 +11,7 @@ python -m pip install -e ".[test]"
 uvicorn app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000/dashboard/` for the municipal operations dashboard, `http://127.0.0.1:8000/citizen/citizen.html` to book a pickup, or `http://127.0.0.1:8000/docs` for the API explorer.
+Open `http://127.0.0.1:8000/dashboard/` for the municipal operations dashboard, `http://127.0.0.1:8000/citizen/citizen.html` to book a pickup, `http://127.0.0.1:8000/collector/collector.html` for the collector console, or `http://127.0.0.1:8000/docs` for the API explorer.
 
 ## Test
 
