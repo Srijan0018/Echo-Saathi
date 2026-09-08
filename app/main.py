@@ -154,6 +154,11 @@ class AssignPickupRequest(BaseModel):
     collector_id: UUID
 
 
+class CollectorPickupInbox(BaseModel):
+    collector_id: UUID
+    pickups: list[PickupResponse]
+
+
 class BatchStatus(StrEnum):
     CREATED = "created"
     PROCESSED = "processed"
@@ -421,6 +426,24 @@ def assign_pickup(payload: AssignPickupRequest) -> PickupResponse:
     PICKUPS[pickup.id] = assigned
     persist_assignment(pickup.id, collector.id)
     return assigned
+
+
+@app.get(
+    "/api/v1/collectors/{collector_id}/pickups",
+    response_model=CollectorPickupInbox,
+    tags=["collectors"],
+)
+def collector_pickup_inbox(collector_id: UUID) -> CollectorPickupInbox:
+    collector = USERS.get(collector_id)
+    if collector is None or collector.role != UserRole.COLLECTOR:
+        raise HTTPException(status_code=404, detail="collector not found")
+    pickups = [
+        pickup
+        for pickup in PICKUPS.values()
+        if pickup.status in {PickupStatus.REQUESTED, PickupStatus.ASSIGNED}
+        and (pickup.collector_id is None or pickup.collector_id == collector_id)
+    ]
+    return CollectorPickupInbox(collector_id=collector_id, pickups=pickups)
 
 
 @app.post(
