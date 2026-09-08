@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kabadiwala Connect | Sign in</title>
+  <link rel="stylesheet" href="/dashboard/styles.css">
+  <style>
+    .login-shell{min-height:100vh;display:grid;grid-template-columns:1.15fr .85fr;background:#102a24}.login-art{padding:9vw;color:#eff9ee;display:flex;flex-direction:column;justify-content:space-between}.login-art h1{font-size:clamp(44px,6vw,82px);line-height:.96;letter-spacing:-.06em;margin:18px 0}.login-art h1 em{color:#c9ee9d;font-style:normal}.login-art p{color:#a7c4b8;max-width:390px;line-height:1.7;font-size:14px}.login-form{background:#f5f7f3;padding:9vw 8vw;display:flex;flex-direction:column;justify-content:center}.login-form h2{font-size:30px;letter-spacing:-.04em;margin:12px 0}.login-form .notice{color:var(--muted);font-size:12px;line-height:1.6}.field{display:grid;gap:7px;margin:22px 0 0}.field label{font:10px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.field input,.field select{border:1px solid var(--line);border-radius:4px;padding:14px;background:#fff;font:13px Manrope,sans-serif}.button{margin-top:22px;border:0;border-radius:4px;background:var(--green);color:#fff;padding:14px;font:700 12px Manrope,sans-serif;cursor:pointer}.result{display:none;margin-top:14px;padding:12px;border:1px solid #f0c5bb;background:#fff0ec;color:#a34b40;font-size:12px}.result.show{display:block}.brand{font-size:13px;letter-spacing:.02em}.eyebrow{color:#9ab7ad}@media(max-width:700px){.login-shell{grid-template-columns:1fr}.login-art{min-height:330px;padding:36px 24px}.login-form{padding:44px 24px}}
+  </style>
+</head>
+<body>
+  <main class="login-shell"><section class="login-art"><div class="brand">KC · KABADIWALA CONNECT OS</div><div><p class="eyebrow">Circular operations network</p><h1>Move the city<br><em>forward.</em></h1><p>One login for the people who recover value: citizens, collectors, and every handoff between them.</p></div><small class="eyebrow">Local demo identity · no government ID required</small></section><section class="login-form"><p class="eyebrow accent">Welcome back</p><h2>Sign in to your rail</h2><p class="notice">Use the same phone and role you registered with during the demo.</p><div class="field"><label for="phone">Phone number</label><input id="phone" value="+919876543210" inputmode="tel"></div><div class="field"><label for="role">I am a</label><select id="role"><option value="citizen">Citizen / RWA</option><option value="collector">Collector</option></select></div><button class="button" id="login">Continue</button><div class="result" id="result"></div></section></main><script src="/login.js"></script>
+</body>
+</html>

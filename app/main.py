@@ -318,6 +318,7 @@ app.mount("/citizen", StaticFiles(directory="frontend", html=True), name="citize
 app.mount("/collector", StaticFiles(directory="frontend", html=True), name="collector")
 app.mount("/depot", StaticFiles(directory="frontend", html=True), name="depot")
 app.mount("/regulatory", StaticFiles(directory="frontend", html=True), name="regulatory")
+app.mount("/login", StaticFiles(directory="frontend", html=True), name="login")
 
 
 @app.get("/", tags=["system"])

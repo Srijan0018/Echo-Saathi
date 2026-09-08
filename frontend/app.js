@@ -1,23 +1,36 @@
 const formatKg = value => `${Number(value).toFixed(2)} kg`;
 
 async function loadDashboard() {
-  const [summaryResponse, materialsResponse, auditsResponse, databaseResponse] = await Promise.all([
+  const [summaryResponse, materialsResponse, auditsResponse, databaseResponse, mapResponse] = await Promise.all([
     fetch('/api/v1/municipality/summary'),
     fetch('/api/v1/materials'),
     fetch('/api/v1/municipality/audits'),
-    fetch('/health/database')
+    fetch('/health/database'),
+    fetch('/api/v1/municipality/map')
   ]);
-  if (!summaryResponse.ok || !materialsResponse.ok || !auditsResponse.ok || !databaseResponse.ok) throw new Error('Dashboard API unavailable');
+  if (!summaryResponse.ok || !materialsResponse.ok || !auditsResponse.ok || !databaseResponse.ok || !mapResponse.ok) throw new Error('Dashboard API unavailable');
   const summary = await summaryResponse.json();
   const materials = await materialsResponse.json();
   const audits = await auditsResponse.json();
   const database = await databaseResponse.json();
+  const map = await mapResponse.json();
 
   document.querySelector('#today').textContent = new Intl.DateTimeFormat('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
   }).format(new Date());
   document.querySelector('#network-label').textContent = database.status === 'ok' ? 'Network online' : 'Demo mode online';
   document.querySelector('#network-mode').textContent = database.status === 'ok' ? 'PostGIS connected' : 'In-memory data mode';
+  document.querySelector('#map-count').textContent = `${map.points.length} pickup points`;
+  const zoneMap = document.querySelector('#zone-map');
+  zoneMap.querySelector('.loading').remove();
+  map.points.forEach(point => {
+    const marker = document.createElement('span');
+    marker.className = `map-marker ${point.status === 'completed' ? 'complete' : ''}`;
+    marker.title = `${point.status} · ${point.is_rwa_drive ? point.rwa_name : 'Household pickup'}`;
+    marker.style.left = `${Math.max(8, Math.min(92, 50 + (Number(point.longitude) - Number(map.center_longitude)) * 220))}%`;
+    marker.style.top = `${Math.max(10, Math.min(88, 50 - (Number(point.latitude) - Number(map.center_latitude)) * 220))}%`;
+    zoneMap.appendChild(marker);
+  });
 
   document.querySelector('#recovered-weight').textContent = formatKg(summary.recovered_weight_kg);
   document.querySelector('#batch-count').textContent = `${summary.processed_batches} batches`;
