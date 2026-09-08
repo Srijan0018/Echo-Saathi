@@ -13,6 +13,7 @@ from app.database import (
     database_status,
     persist_batch,
     persist_kyc,
+    persist_assignment,
     persist_pickup,
     persist_recycle,
     persist_settlement,
@@ -111,6 +112,7 @@ class PickupRequest(BaseModel):
 class PickupResponse(BaseModel):
     id: UUID
     citizen_id: UUID
+    collector_id: UUID | None = None
     status: PickupStatus
     otp_code: str
     items: list[PickupItemRequest]
@@ -136,6 +138,11 @@ class SettlementResponse(BaseModel):
     upi_reference: str
     audit_flagged: bool
     z_score: Decimal
+
+
+class AssignPickupRequest(BaseModel):
+    pickup_id: UUID
+    collector_id: UUID
 
 
 class BatchStatus(StrEnum):
@@ -366,6 +373,7 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
     pickup = PickupResponse(
         id=uuid4(),
         citizen_id=payload.citizen_id,
+        collector_id=None,
         status=PickupStatus.REQUESTED,
         otp_code="4826",
         items=payload.items,
@@ -382,6 +390,24 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
     return pickup
 
 
+@app.post("/api/v1/pickups/assign", response_model=PickupResponse, tags=["pickups"])
+def assign_pickup(payload: AssignPickupRequest) -> PickupResponse:
+    pickup = PICKUPS.get(payload.pickup_id)
+    collector = USERS.get(payload.collector_id)
+    if pickup is None:
+        raise HTTPException(status_code=404, detail="pickup not found")
+    if collector is None or collector.role != UserRole.COLLECTOR:
+        raise HTTPException(status_code=404, detail="collector not found")
+    if pickup.status != PickupStatus.REQUESTED:
+        raise HTTPException(status_code=409, detail="pickup is not awaiting assignment")
+    assigned = pickup.model_copy(
+        update={"collector_id": collector.id, "status": PickupStatus.ASSIGNED}
+    )
+    PICKUPS[pickup.id] = assigned
+    persist_assignment(pickup.id, collector.id)
+    return assigned
+
+
 @app.post(
     "/api/v1/pickups/verify-and-settle",
     response_model=SettlementResponse,
@@ -394,6 +420,8 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
         raise HTTPException(status_code=404, detail="pickup not found")
     if collector is None or collector.role != UserRole.COLLECTOR:
         raise HTTPException(status_code=404, detail="collector not found")
+    if pickup.collector_id is not None and pickup.collector_id != collector.id:
+        raise HTTPException(status_code=403, detail="pickup is assigned to another collector")
     if pickup.status == PickupStatus.COMPLETED:
         raise HTTPException(status_code=409, detail="pickup already settled")
     if payload.otp_code != pickup.otp_code:
