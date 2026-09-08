@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.database import database_status, persist_kyc, persist_pickup, persist_user
+from app.database import database_status, persist_kyc, persist_pickup, persist_settlement, persist_user
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -394,6 +394,7 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
     estimated = {item.material_code: item.ai_estimated_kg for item in pickup.items}
     payout = Decimal("0.00")
     assessments = []
+    settled_items: list[tuple[str, str, str, str, str]] = []
     for item in payload.items:
         material = catalog.get(item.material_code)
         if material is None:
@@ -401,7 +402,18 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
         if item.material_code not in estimated:
             raise HTTPException(status_code=422, detail=f"material not requested: {item.material_code}")
         net_weight = item.actual_weight_kg * (Decimal("100") - item.quality_deduction_pct) / Decimal("100")
-        payout += net_weight * (material.aggregator_buy_rate - material.collector_margin)
+        subtotal = net_weight * (material.aggregator_buy_rate - material.collector_margin)
+        payout += subtotal
+        co2_saved = net_weight * material.co2e_factor
+        settled_items.append(
+            (
+                item.material_code,
+                str(item.actual_weight_kg),
+                str(item.quality_deduction_pct),
+                str(subtotal.quantize(Decimal("0.01"))),
+                str(co2_saved.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+            )
+        )
         discrepancy = item.actual_weight_kg - estimated[item.material_code]
         history = DISCREPANCIES.setdefault(payload.collector_id, [])
         assessment = assess_discrepancy(history, discrepancy, estimated[item.material_code])
@@ -420,6 +432,7 @@ def verify_and_settle(payload: SettlementRequest) -> SettlementResponse:
     completed_pickup = pickup.model_copy(update={"status": PickupStatus.COMPLETED})
     PICKUPS[pickup.id] = completed_pickup
     SETTLED_WEIGHTS[pickup.id] = {item.material_code: item.actual_weight_kg for item in payload.items}
+    persist_settlement(pickup.id, payload.collector_id, settled_items)
     audit_flagged = any(assessment.flagged for assessment in assessments)
     return SettlementResponse(
         pickup_id=pickup.id,

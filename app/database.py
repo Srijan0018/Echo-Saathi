@@ -84,6 +84,45 @@ def persist_kyc(user_id: UUID, reference_hash: str) -> bool:
         return False
 
 
+def persist_settlement(
+    pickup_id: UUID,
+    collector_id: UUID,
+    items: list[tuple[str, str, str, str, str]],
+) -> bool:
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        return False
+    try:
+        from psycopg import Error, connect
+
+        with connect(database_url) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE pickup_requests
+                    SET collector_id = %s, otp_verified = TRUE,
+                        status = 'completed', completed_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (collector_id, pickup_id),
+                )
+                cursor.executemany(
+                    """
+                    UPDATE pickup_items
+                    SET actual_weight_kg = %s, quality_deduction_pct = %s,
+                        subtotal_price = %s, co2_saved_kg = %s
+                    WHERE pickup_id = %s AND material_code = %s
+                    """,
+                    [
+                        (actual, deduction, subtotal, co2_saved, pickup_id, material_code)
+                        for material_code, actual, deduction, subtotal, co2_saved in items
+                    ],
+                )
+        return True
+    except (ModuleNotFoundError, Error):
+        return False
+
+
 def database_status() -> dict[str, str]:
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
