@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.database import database_status
+from app.database import database_status, persist_user
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -289,6 +289,7 @@ def register_user(payload: RegisterRequest) -> User:
         upi_id=payload.upi_id,
     )
     USERS[user.id] = user
+    persist_user(user.id, user.phone, user.full_name, user.role.value, user.upi_id)
     return user
 
 
