@@ -29,4 +29,4 @@ To start the local database service:
 docker compose up -d postgres
 ```
 
-The schema is applied automatically on the first volume initialization. Copy `.env.example` to `.env` and replace the demo password before using this service outside a local demo.
+The schema and material catalog seed are applied automatically on the first volume initialization. Copy `.env.example` to `.env` and replace the demo password before using this service outside a local demo.
