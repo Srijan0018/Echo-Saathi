@@ -8,7 +8,15 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.database import database_status, persist_kyc, persist_pickup, persist_settlement, persist_user
+from app.database import (
+    database_status,
+    persist_batch,
+    persist_kyc,
+    persist_pickup,
+    persist_recycle,
+    persist_settlement,
+    persist_user,
+)
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -474,6 +482,14 @@ def aggregate_batch(payload: BatchAggregateRequest) -> BatchResponse:
         status=BatchStatus.CREATED,
     )
     BATCHES[batch_id] = batch
+    persist_batch(
+        batch.batch_id,
+        batch.batch_hash,
+        payload.aggregator_id,
+        batch.material_code,
+        str(batch.gross_weight_kg),
+        payload.pickup_ids,
+    )
     return batch
 
 
@@ -500,6 +516,15 @@ def recycle_batch(batch_id: UUID, payload: RecycleRequest) -> BatchResponse:
         }
     )
     BATCHES[batch_id] = processed
+    persist_recycle(
+        batch_id,
+        str(payload.moisture_deduction_pct),
+        str(payload.foreign_matter_deduction_pct),
+        str(processed.net_weight_kg),
+        str(processed.co2e_avoided_kg),
+        processed.cpcb_epr_token or "",
+        processed.digilocker_doc_uri or "",
+    )
     return processed
 
 
