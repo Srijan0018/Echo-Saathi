@@ -13,3 +13,15 @@ def test_database_health_defaults_to_in_memory_mode(monkeypatch) -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "not_configured", "mode": "in_memory"}
+
+
+def test_database_health_reports_postgres_when_configured(monkeypatch) -> None:
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        "postgresql://kabadiwala:kabadiwala_demo_password@localhost:5433/kabadiwala_connect",
+    )
+
+    response = client.get("/health/database")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "postgresql"

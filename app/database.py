@@ -1,6 +1,10 @@
 import os
 from uuid import UUID
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 DEFAULT_DATABASE_URL = "postgresql://kabadiwala:kabadiwala_demo_password@localhost:5433/kabadiwala_connect"
 
