@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.database import database_status, persist_user
+from app.database import database_status, persist_pickup, persist_user
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -361,6 +361,14 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
         items=payload.items,
     )
     PICKUPS[pickup.id] = pickup
+    persist_pickup(
+        pickup.id,
+        pickup.citizen_id,
+        str(payload.latitude),
+        str(payload.longitude),
+        pickup.otp_code,
+        [(item.material_code, str(item.ai_estimated_kg)) for item in payload.items],
+    )
     return pickup
 
 
