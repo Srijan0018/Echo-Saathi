@@ -47,6 +47,9 @@ def persist_pickup(
     longitude: str,
     otp_code: str,
     items: list[tuple[str, str]],
+    is_rwa_drive: bool = False,
+    rwa_name: str | None = None,
+    offline_sync_token: str | None = None,
 ) -> bool:
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
@@ -58,10 +61,11 @@ def persist_pickup(
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO pickup_requests (id, citizen_id, location, otp_code)
-                    VALUES (%s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s)
+                    INSERT INTO pickup_requests
+                        (id, citizen_id, location, otp_code, is_rwa_drive, rwa_name, offline_sync_token)
+                    VALUES (%s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s, %s)
                     """,
-                    (pickup_id, citizen_id, longitude, latitude, otp_code),
+                    (pickup_id, citizen_id, longitude, latitude, otp_code, is_rwa_drive, rwa_name, offline_sync_token),
                 )
                 cursor.executemany(
                     """

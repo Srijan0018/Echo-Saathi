@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.database import (
     database_status,
@@ -108,6 +108,12 @@ class PickupRequest(BaseModel):
     is_rwa_drive: bool = False
     rwa_name: str | None = Field(default=None, max_length=100)
 
+    @model_validator(mode="after")
+    def validate_rwa_name(self) -> "PickupRequest":
+        if self.is_rwa_drive and not self.rwa_name:
+            raise ValueError("rwa_name is required for an RWA drive")
+        return self
+
 
 class PickupResponse(BaseModel):
     id: UUID
@@ -116,6 +122,9 @@ class PickupResponse(BaseModel):
     status: PickupStatus
     otp_code: str
     items: list[PickupItemRequest]
+    is_rwa_drive: bool = False
+    rwa_name: str | None = None
+    offline_sync_token: str
 
 
 class SettlementItem(BaseModel):
@@ -377,6 +386,9 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
         status=PickupStatus.REQUESTED,
         otp_code="4826",
         items=payload.items,
+        is_rwa_drive=payload.is_rwa_drive,
+        rwa_name=payload.rwa_name,
+        offline_sync_token=sha256(f"offline:{uuid4()}".encode()).hexdigest(),
     )
     PICKUPS[pickup.id] = pickup
     persist_pickup(
@@ -386,6 +398,9 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
         str(payload.longitude),
         pickup.otp_code,
         [(item.material_code, str(item.ai_estimated_kg)) for item in payload.items],
+        payload.is_rwa_drive,
+        payload.rwa_name,
+        pickup.offline_sync_token,
     )
     return pickup
 
