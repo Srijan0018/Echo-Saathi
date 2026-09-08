@@ -40,6 +40,38 @@ def persist_user(user_id: UUID, phone: str, full_name: str, role: str, upi_id: s
         return False
 
 
+def load_user(phone: str, role: str) -> dict[str, object] | None:
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        return None
+    try:
+        from psycopg import Error, connect
+
+        with connect(database_url, connect_timeout=2) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, phone, full_name, role, upi_id, dpi_kyc_verified, dpi_kyc_ref_hash
+                    FROM users WHERE phone = %s AND role = %s::user_role
+                    """,
+                    (phone, role),
+                )
+                row = cursor.fetchone()
+        if row is None:
+            return None
+        return {
+            "id": row[0],
+            "phone": row[1],
+            "full_name": row[2],
+            "role": row[3],
+            "upi_id": row[4],
+            "dpi_kyc_verified": row[5],
+            "dpi_kyc_ref_hash": row[6],
+        }
+    except (ModuleNotFoundError, Error):
+        return None
+
+
 def persist_pickup(
     pickup_id: UUID,
     citizen_id: UUID,

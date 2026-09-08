@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.database import (
     database_status,
+    load_user,
     persist_batch,
     persist_kyc,
     persist_assignment,
@@ -358,6 +359,11 @@ def login_user(payload: LoginRequest) -> LoginResponse:
         (candidate for candidate in USERS.values() if candidate.phone == payload.phone and candidate.role == payload.role),
         None,
     )
+    if user is None:
+        stored_user = load_user(payload.phone, payload.role.value)
+        if stored_user is not None:
+            user = User(**stored_user)
+            USERS[user.id] = user
     if user is None:
         raise HTTPException(status_code=401, detail="invalid phone or role")
     access_token = sha256(f"session:{user.id}:{payload.role.value}".encode()).hexdigest()
