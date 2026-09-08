@@ -50,6 +50,17 @@ class RegisterRequest(BaseModel):
     upi_id: str | None = Field(default=None, max_length=50)
 
 
+class LoginRequest(BaseModel):
+    phone: str = Field(min_length=10, max_length=15, pattern=r"^\+?[0-9]{10,14}$")
+    role: UserRole
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: "User"
+
+
 class User(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -125,6 +136,21 @@ class PickupResponse(BaseModel):
     is_rwa_drive: bool = False
     rwa_name: str | None = None
     offline_sync_token: str
+
+
+class MapPoint(BaseModel):
+    pickup_id: UUID
+    latitude: Decimal
+    longitude: Decimal
+    status: PickupStatus
+    is_rwa_drive: bool
+    rwa_name: str | None = None
+
+
+class MapResponse(BaseModel):
+    center_latitude: Decimal
+    center_longitude: Decimal
+    points: list[MapPoint]
 
 
 class SettlementItem(BaseModel):
@@ -273,7 +299,9 @@ MATERIAL_CATALOG: tuple[Material, ...] = (
 )
 
 USERS: dict[UUID, User] = {}
+SESSIONS: dict[str, UUID] = {}
 PICKUPS: dict[UUID, PickupResponse] = {}
+PICKUP_LOCATIONS: dict[UUID, tuple[Decimal, Decimal]] = {}
 DISCREPANCIES: dict[UUID, list[Decimal]] = {}
 FRAUD_AUDIT_LOGS: list[dict[str, str | Decimal | UUID]] = []
 SETTLED_WEIGHTS: dict[UUID, dict[str, Decimal]] = {}
@@ -321,6 +349,19 @@ def register_user(payload: RegisterRequest) -> User:
     USERS[user.id] = user
     persist_user(user.id, user.phone, user.full_name, user.role.value, user.upi_id)
     return user
+
+
+@app.post("/api/v1/auth/login", response_model=LoginResponse, tags=["auth"])
+def login_user(payload: LoginRequest) -> LoginResponse:
+    user = next(
+        (candidate for candidate in USERS.values() if candidate.phone == payload.phone and candidate.role == payload.role),
+        None,
+    )
+    if user is None:
+        raise HTTPException(status_code=401, detail="invalid phone or role")
+    access_token = sha256(f"session:{user.id}:{payload.role.value}".encode()).hexdigest()
+    SESSIONS[access_token] = user.id
+    return LoginResponse(access_token=access_token, user=user)
 
 
 @app.post("/api/v1/dpi/verify-kyc", response_model=KycResponse, tags=["dpi"])
@@ -396,6 +437,7 @@ def request_pickup(payload: PickupRequest) -> PickupResponse:
         offline_sync_token=sha256(f"offline:{uuid4()}".encode()).hexdigest(),
     )
     PICKUPS[pickup.id] = pickup
+    PICKUP_LOCATIONS[pickup.id] = (payload.latitude, payload.longitude)
     persist_pickup(
         pickup.id,
         pickup.citizen_id,
@@ -612,6 +654,25 @@ def municipality_summary() -> MunicipalSummary:
 @app.get("/api/v1/municipality/audits", response_model=list[AuditLogResponse], tags=["municipality"])
 def municipality_audits() -> list[AuditLogResponse]:
     return [AuditLogResponse(**audit) for audit in FRAUD_AUDIT_LOGS]
+
+
+@app.get("/api/v1/municipality/map", response_model=MapResponse, tags=["municipality"])
+def municipality_map() -> MapResponse:
+    return MapResponse(
+        center_latitude=Decimal("12.971600"),
+        center_longitude=Decimal("77.594600"),
+        points=[
+            MapPoint(
+                pickup_id=pickup.id,
+                latitude=PICKUP_LOCATIONS.get(pickup.id, (Decimal("12.971600"), Decimal("77.594600")))[0],
+                longitude=PICKUP_LOCATIONS.get(pickup.id, (Decimal("12.971600"), Decimal("77.594600")))[1],
+                status=pickup.status,
+                is_rwa_drive=pickup.is_rwa_drive,
+                rwa_name=pickup.rwa_name,
+            )
+            for pickup in PICKUPS.values()
+        ],
+    )
 
 
 @app.post("/api/v1/rag/query", response_model=RagResponse, tags=["regulatory"])
