@@ -62,6 +62,28 @@ def persist_pickup(
         return False
 
 
+def persist_kyc(user_id: UUID, reference_hash: str) -> bool:
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        return False
+    try:
+        from psycopg import Error, connect
+
+        with connect(database_url) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE users
+                    SET dpi_kyc_verified = TRUE, dpi_kyc_ref_hash = %s
+                    WHERE id = %s
+                    """,
+                    (reference_hash, user_id),
+                )
+        return True
+    except (ModuleNotFoundError, Error):
+        return False
+
+
 def database_status() -> dict[str, str]:
     database_url = os.getenv("DATABASE_URL")
     if not database_url:

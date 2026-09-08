@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.database import database_status, persist_pickup, persist_user
+from app.database import database_status, persist_kyc, persist_pickup, persist_user
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -308,6 +308,7 @@ def verify_kyc(payload: KycRequest) -> KycResponse:
         }
     )
     USERS[user.id] = verified_user
+    persist_kyc(user.id, token_hash)
     return KycResponse(
         status="VERIFIED",
         kyc_id=f"DPI-KYC-{user.id.hex[:8].upper()}",
