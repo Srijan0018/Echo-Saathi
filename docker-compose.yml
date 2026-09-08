@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: kabadiwala
       POSTGRES_PASSWORD: kabadiwala_demo_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - kabadiwala-postgres:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro

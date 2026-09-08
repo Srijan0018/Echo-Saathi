@@ -2,7 +2,7 @@ import os
 from uuid import UUID
 
 
-DEFAULT_DATABASE_URL = "postgresql://kabadiwala:kabadiwala_demo_password@localhost:5432/kabadiwala_connect"
+DEFAULT_DATABASE_URL = "postgresql://kabadiwala:kabadiwala_demo_password@localhost:5433/kabadiwala_connect"
 
 
 def persist_user(user_id: UUID, phone: str, full_name: str, role: str, upi_id: str | None) -> bool:
@@ -10,7 +10,7 @@ def persist_user(user_id: UUID, phone: str, full_name: str, role: str, upi_id: s
     if not database_url:
         return False
     try:
-        from psycopg import OperationalError, connect
+        from psycopg import Error, connect
 
         with connect(database_url) as connection:
             with connection.cursor() as cursor:
@@ -23,7 +23,7 @@ def persist_user(user_id: UUID, phone: str, full_name: str, role: str, upi_id: s
                     (user_id, phone, full_name, role, upi_id),
                 )
         return True
-    except (ModuleNotFoundError, OperationalError):
+    except (ModuleNotFoundError, Error):
         return False
 
 

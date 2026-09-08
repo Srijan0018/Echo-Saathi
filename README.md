@@ -26,7 +26,7 @@ pytest
 
 ## Persistence schema
 
-The demo API currently uses deterministic in-memory state. The PostgreSQL 16/PostGIS target schema is available at `db/schema.sql` for the persistence integration phase.
+The demo API currently uses deterministic in-memory state. The PostgreSQL 16/PostGIS target schema is available at `db/schema.sql` for the persistence integration phase. The local Compose database is published on port `5433` to avoid conflicts with an existing Windows PostgreSQL service on `5432`.
 
 To start the local database service:
 
