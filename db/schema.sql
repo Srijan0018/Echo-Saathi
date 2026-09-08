@@ -48,6 +48,7 @@ CREATE TABLE pickup_requests (
     status pickup_status NOT NULL DEFAULT 'requested',
     otp_code CHAR(4) NOT NULL CHECK (otp_code ~ '^[0-9]{4}$'),
     otp_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    offline_sync_token VARCHAR(128),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMPTZ
 );
