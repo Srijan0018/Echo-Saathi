@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.database import database_status
 from app.fraud import assess_discrepancy
 from app.rag import query_regulations
 from app.routing import RouteStop, optimize_routes
@@ -269,6 +270,11 @@ def root() -> dict[str, str]:
 @app.get("/health", tags=["system"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/health/database", tags=["system"])
+def database_health() -> dict[str, str]:
+    return database_status()
 
 
 @app.post("/api/v1/auth/register", response_model=User, status_code=201, tags=["auth"])
