@@ -12,5 +12,6 @@ def test_login_page_and_dashboard_map_are_served() -> None:
 
     assert login.status_code == 200
     assert "Continue" in login.text
+    assert "/login/login.js" in login.text
     assert dashboard.status_code == 200
     assert "Pickup activity map" in dashboard.text
