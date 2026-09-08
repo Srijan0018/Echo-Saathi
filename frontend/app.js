@@ -1,15 +1,23 @@
 const formatKg = value => `${Number(value).toFixed(2)} kg`;
 
 async function loadDashboard() {
-  const [summaryResponse, materialsResponse, auditsResponse] = await Promise.all([
+  const [summaryResponse, materialsResponse, auditsResponse, databaseResponse] = await Promise.all([
     fetch('/api/v1/municipality/summary'),
     fetch('/api/v1/materials'),
-    fetch('/api/v1/municipality/audits')
+    fetch('/api/v1/municipality/audits'),
+    fetch('/health/database')
   ]);
-  if (!summaryResponse.ok || !materialsResponse.ok || !auditsResponse.ok) throw new Error('Dashboard API unavailable');
+  if (!summaryResponse.ok || !materialsResponse.ok || !auditsResponse.ok || !databaseResponse.ok) throw new Error('Dashboard API unavailable');
   const summary = await summaryResponse.json();
   const materials = await materialsResponse.json();
   const audits = await auditsResponse.json();
+  const database = await databaseResponse.json();
+
+  document.querySelector('#today').textContent = new Intl.DateTimeFormat('en-IN', {
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+  }).format(new Date());
+  document.querySelector('#network-label').textContent = database.status === 'ok' ? 'Network online' : 'Demo mode online';
+  document.querySelector('#network-mode').textContent = database.status === 'ok' ? 'PostGIS connected' : 'In-memory data mode';
 
   document.querySelector('#recovered-weight').textContent = formatKg(summary.recovered_weight_kg);
   document.querySelector('#batch-count').textContent = `${summary.processed_batches} batches`;

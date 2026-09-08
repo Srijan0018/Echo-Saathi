@@ -5,6 +5,7 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -271,8 +272,8 @@ app.mount("/regulatory", StaticFiles(directory="frontend", html=True), name="reg
 
 
 @app.get("/", tags=["system"])
-def root() -> dict[str, str]:
-    return {"name": "Kabadiwala Connect OS", "status": "ready", "version": app.version}
+def root() -> RedirectResponse:
+    return RedirectResponse(url="/dashboard/", status_code=307)
 
 
 @app.get("/health", tags=["system"])
