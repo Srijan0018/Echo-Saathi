@@ -10,6 +10,11 @@ python -m venv .venv
 python -m pip install -e ".[test]"
 uvicorn app.main:app --reload
 ```
+Or use the complete Windows setup command, which starts PostGIS, configures `DATABASE_URL`, and launches the API:
+
+```powershell
+.\scripts\start.ps1
+```
 
 Open `http://127.0.0.1:8000/dashboard/` for the municipal operations dashboard, `http://127.0.0.1:8000/citizen/citizen.html` to book a pickup, `http://127.0.0.1:8000/collector/collector.html` for the collector console, `http://127.0.0.1:8000/depot/depot.html` for depot and recycler processing, `http://127.0.0.1:8000/regulatory/regulatory.html` for the cited regulatory assistant, or `http://127.0.0.1:8000/docs` for the API explorer.
 
