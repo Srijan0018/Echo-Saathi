@@ -1,6 +1,7 @@
 const routeResult = document.querySelector('#route-result');
 const settleResult = document.querySelector('#settle-result');
 const assignResult = document.querySelector('#assign-result');
+const inboxResult = document.querySelector('#inbox-result');
 
 function showResult(element, html, error = false) {
   element.innerHTML = html;
@@ -14,6 +15,22 @@ function parseStops(value) {
     return { stop_id, weight_kg, volume_m3 };
   });
 }
+
+document.querySelector('#load-inbox').addEventListener('click', async () => {
+  const button = document.querySelector('#load-inbox');
+  button.disabled = true;
+  try {
+    const collectorId = document.querySelector('#collector-id').value;
+    const response = await fetch(`/api/v1/collectors/${collectorId}/pickups`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || 'inbox unavailable');
+    showResult(inboxResult, result.pickups.length ? result.pickups.map(pickup => `<div class="trip"><strong>${pickup.status}</strong><span>${pickup.id.slice(0, 8)}</span><span>${pickup.items.map(item => item.material_code).join(', ')}</span></div>`).join('') : '<strong>No open pickups</strong>');
+  } catch (error) {
+    showResult(inboxResult, `<strong>${error.message}</strong>`, true);
+  } finally {
+    button.disabled = false;
+  }
+});
 
 document.querySelector('#optimize').addEventListener('click', async () => {
   const button = document.querySelector('#optimize');
