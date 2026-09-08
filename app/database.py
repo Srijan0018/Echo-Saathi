@@ -26,6 +26,15 @@ def persist_user(user_id: UUID, phone: str, full_name: str, role: str, upi_id: s
                     """,
                     (user_id, phone, full_name, role, upi_id),
                 )
+                if role == "collector":
+                    cursor.execute(
+                        """
+                        INSERT INTO collectors (id)
+                        VALUES (%s)
+                        ON CONFLICT (id) DO NOTHING
+                        """,
+                        (user_id,),
+                    )
         return True
     except (ModuleNotFoundError, Error):
         return False
