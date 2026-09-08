@@ -10,5 +10,5 @@ def test_collector_console_is_served() -> None:
     response = client.get("/collector/collector.html")
 
     assert response.status_code == 200
-    assert "Verify OTP & settle" in response.text
+    assert "Assign pickup to me" in response.text
     assert client.get("/collector/collector.js").status_code == 200

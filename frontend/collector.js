@@ -1,5 +1,6 @@
 const routeResult = document.querySelector('#route-result');
 const settleResult = document.querySelector('#settle-result');
+const assignResult = document.querySelector('#assign-result');
 
 function showResult(element, html, error = false) {
   element.innerHTML = html;
@@ -39,6 +40,21 @@ document.querySelector('#settle').addEventListener('click', async () => {
     showResult(settleResult, `<strong>Settlement complete</strong><small>UPI reference ${result.upi_reference}</small><div class="otp">₹${result.payout_amount}</div><small>${result.audit_flagged ? 'Audit review required' : 'Trust check clear'}</small>`);
   } catch (error) {
     showResult(settleResult, `<strong>${error.message}</strong>`, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.querySelector('#assign').addEventListener('click', async () => {
+  const button = document.querySelector('#assign');
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/v1/pickups/assign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pickup_id: document.querySelector('#pickup-id').value, collector_id: document.querySelector('#settle-collector-id').value }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || 'assignment failed');
+    showResult(assignResult, `<strong>Pickup assigned</strong><small>Ownership confirmed · status ${result.status}</small>`);
+  } catch (error) {
+    showResult(assignResult, `<strong>${error.message}</strong>`, true);
   } finally {
     button.disabled = false;
   }
