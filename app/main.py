@@ -310,7 +310,7 @@ BATCHES: dict[UUID, BatchResponse] = {}
 KYC_SALT = "kabadiwala-connect-demo"
 
 app = FastAPI(
-    title="Echo Saathi OS",
+    title="Eco Saathi OS",
     version="0.1.0",
     description="Deterministic circular-economy operations API.",
 )

@@ -1,4 +1,4 @@
-# EcoSaathi OS
+# Eco Saathi OS
 
 ### A digital platform for India’s informal recycling ecosystem
 
