@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kabadiwala Connect | Municipal Operations</title>
+  <title>Echo Saathi | Municipal Operations</title>
   <link rel="stylesheet" href="/dashboard/styles.css">
 </head>
 <body>
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">KC</span><span>Kabadiwala<br><strong>Connect OS</strong></span></div>
+      <div class="brand"><span class="brand-mark">ES</span><span>Echo Saathi<br><strong>Connect OS</strong></span></div>
       <p class="eyebrow">Municipal control room</p>
       <nav>
         <a class="nav-link active" href="#overview"><span>01</span>Overview</a>
@@ -24,8 +24,14 @@
     </aside>
 
     <main class="main" id="overview">
-      <header class="topbar"><div><p class="eyebrow" id="today">Recovery operations</p><h1>Recovery command centre</h1></div><div class="top-actions"><a class="login-link" href="/login/login.html">Sign in</a><div class="status"><span class="pulse"></span>All systems operational</div></div></header>
+      <header class="topbar"><div><p class="eyebrow" id="today">Recovery operations</p><h1>Recovery command centre</h1></div><div class="top-actions"><div class="persona-switch" aria-label="Switch interface"><span>Explore as</span><a class="login-link" href="/citizen/citizen.html">Citizen</a><a class="login-link" href="/collector/collector.html">Collector</a></div><div class="status"><span class="pulse"></span>All systems operational</div></div></header>
       <section class="intro"><div><p class="eyebrow accent">Circular chain / live view</p><h2>Make every kilogram<br><em>count twice.</em></h2><p class="intro-copy">Track material recovery from neighborhood pickup to verified recycler output.</p></div><div class="flow"><span>Households</span><i>→</i><span>Collectors</span><i>→</i><span>Recycler</span></div></section>
+
+      <section class="proof-stack" aria-label="Echo Saathi proof points">
+        <a class="proof-card" href="/collector/collector.html#route-planner"><span class="proof-number">01</span><div><strong>Dual-capacity routing</strong><small>Weight + volume constraints trigger smart depot returns.</small></div><span class="proof-arrow">↗</span></a>
+        <a class="proof-card" href="/collector/collector.html#settlement"><span class="proof-number">02</span><div><strong>Trust-first settlement</strong><small>Citizen OTP, UPI payout, and rolling Z-score audit.</small></div><span class="proof-arrow">↗</span></a>
+        <a class="proof-card" href="/depot/depot.html"><span class="proof-number">03</span><div><strong>EPR-ready traceability</strong><small>Batch hash, carbon impact, EPR token, and DigiLocker URI.</small></div><span class="proof-arrow">↗</span></a>
+      </section>
 
       <section class="metrics" aria-label="Recovery metrics">
         <article class="metric metric-primary"><span class="metric-label">Recovered weight</span><strong id="recovered-weight">--</strong><small>processed batches</small><div class="metric-line"><span id="batch-count">--</span><span>verified</span></div></article>
@@ -40,7 +46,7 @@
       </section>
       <section class="panel map-panel"><div class="panel-heading"><div><p class="eyebrow">Spatial recovery / deterministic zone view</p><h3>Pickup activity map</h3></div><span class="panel-code" id="map-count">Loading points</span></div><div class="zone-map" id="zone-map"><div class="map-grid"></div><span class="map-label label-north">North zone</span><span class="map-label label-south">South zone</span><span class="map-label label-east">East zone</span><span class="map-label label-west">West zone</span><div class="loading">Loading pickup coordinates...</div></div></section>
       <section class="panel audit-panel"><div class="panel-heading"><div><p class="eyebrow">Trust engine / review queue</p><h3>Audit flags</h3></div><span class="panel-code" id="audit-refresh">LIVE LEDGER</span></div><div id="audit-list" class="audit-list"><div class="loading">Loading audit queue...</div></div></section>
-      <footer><span>KABADIWALA CONNECT OS</span><span>Municipal operations network · API status <b>200 OK</b></span></footer>
+      <footer><span>ECHO SAATHI CONNECT OS</span><span>Municipal operations network · API status <b>200 OK</b></span></footer>
     </main>
   </div>
   <script src="/dashboard/app.js"></script>

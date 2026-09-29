@@ -11,5 +11,7 @@ def test_dashboard_is_served_by_api() -> None:
 
     assert response.status_code == 200
     assert "Recovery command centre" in response.text
+    assert "Dual-capacity routing" in response.text
+    assert "EPR-ready traceability" in response.text
     assert "Audit flags" in response.text
     assert "/dashboard/styles.css" in response.text
