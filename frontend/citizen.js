@@ -1,12 +1,37 @@
 let citizenId = null;
 let detectedItems = [];
 
+const session = (() => {
+  try {
+    return JSON.parse(localStorage.getItem('kabadiwala_session') || 'null');
+  } catch (_error) {
+    return null;
+  }
+})();
+
+if (session && (!session.user || session.user.role !== 'citizen')) {
+  window.location.href = '/login/login.html';
+}
+
+const nameInput = document.querySelector('#name');
+const phoneInput = document.querySelector('#phone');
+if (nameInput && session && session.user) nameInput.value = session.user.full_name || nameInput.value;
+if (phoneInput && session && session.user) phoneInput.value = session.user.phone || phoneInput.value;
+
 const scanResult = document.querySelector('#scan-result');
 const bookResult = document.querySelector('#book-result');
 const scanButton = document.querySelector('#scan');
 const bookButton = document.querySelector('#book');
 const rwaDrive = document.querySelector('#rwa-drive');
 const rwaNameField = document.querySelector('#rwa-name-field');
+const logoutButton = document.querySelector('#logout');
+
+if (logoutButton) {
+  logoutButton.addEventListener('click', () => {
+    localStorage.removeItem('kabadiwala_session');
+    window.location.href = '/dashboard/';
+  });
+}
 
 rwaDrive.addEventListener('change', () => {
   rwaNameField.hidden = !rwaDrive.checked;
@@ -16,6 +41,10 @@ function showResult(element, html, isError = false) {
   element.innerHTML = html;
   element.classList.toggle('error', isError);
   element.classList.add('show');
+}
+
+function materialLabel(code) {
+  return code.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 scanButton.addEventListener('click', async () => {
@@ -33,7 +62,10 @@ scanButton.addEventListener('click', async () => {
     if (!response.ok) throw new Error('classification failed');
     const result = await response.json();
     detectedItems = result.detected_materials.map(item => ({ material_code: item.material_code, ai_estimated_kg: item.estimated_kg }));
-    showResult(scanResult, `<strong>${result.contamination_detected ? 'Contamination detected' : 'Clean material mix detected'}</strong><div class="chip-row">${result.detected_materials.map(item => `<span class="chip">${item.material_code} · ${item.estimated_kg} kg</span>`).join('')}</div><small>Confidence ${result.confidence_score} · local demo classification</small>`);
+    const totalEstimatedKg = result.detected_materials.reduce((total, item) => total + Number(item.estimated_kg), 0);
+    const confidencePercent = Math.round(Number(result.confidence_score) * 100);
+    const modeLabel = result.fallback_used ? 'Demo fallback · deterministic result' : 'Live model result';
+    showResult(scanResult, `<strong>${result.contamination_detected ? 'Contamination detected' : 'AI scan complete · clean material mix'}</strong><div class="scan-summary"><div class="scan-stat"><strong>${totalEstimatedKg.toFixed(2)} kg</strong><small>estimated total</small></div><div class="scan-stat"><strong>${result.detected_materials.length}</strong><small>material types</small></div><div class="scan-stat"><strong>${confidencePercent}%</strong><small>confidence</small></div></div><div class="chip-row">${result.detected_materials.map(item => `<span class="chip">${materialLabel(item.material_code)} · ${Number(item.estimated_kg).toFixed(2)} kg · ${Math.round(Number(item.confidence) * 100)}%</span>`).join('')}</div><span class="scan-mode${result.fallback_used ? '' : ' live'}">${modeLabel}</span><small>AI estimate is carried into the pickup request for collector routing and OTP settlement.</small>`);
     bookButton.disabled = false;
   } catch (error) {
     showResult(scanResult, '<strong>Could not classify this image</strong><small>Check that the API is running and try again.</small>', true);

@@ -55,6 +55,21 @@
     .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .chip { background: #e7f7ed; color: var(--green); border-radius: 8px; padding: 7px 9px; font: 600 10px 'DM Mono', monospace; }
     .otp { margin-top: 10px; font: 700 26px 'DM Mono', monospace; color: var(--green); letter-spacing: .18em; }
+    .ai-triad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 26px; }
+    .ai-step { position: relative; overflow: hidden; background: rgba(255,255,255,.78); border: 1px solid #d8e6de; border-radius: 18px; padding: 18px; }
+    .ai-step::after { content: ''; position: absolute; width: 70px; height: 70px; right: -24px; bottom: -28px; border-radius: 50%; background: #e2f4e5; }
+    .ai-step-number { color: var(--green); font: 500 10px 'DM Mono', monospace; letter-spacing: .12em; }
+    .ai-step h2 { margin: 10px 0 7px; font-size: 18px; letter-spacing: -.04em; }
+    .ai-step p { position: relative; z-index: 1; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .ai-step strong { color: var(--green); }
+    .scan-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 14px 0 4px; }
+    .scan-stat { background: #f8fbf9; border: 1px solid #dfeae4; border-radius: 10px; padding: 10px; }
+    .scan-stat strong, .scan-stat small { display: block; }
+    .scan-stat strong { color: var(--green); font-size: 18px; }
+    .scan-stat small { color: var(--muted); margin-top: 3px; font: 9px 'DM Mono', monospace; text-transform: uppercase; }
+    .scan-mode { display: inline-block; margin-top: 10px; color: #7a6323; background: #fff6da; border: 1px solid #efdfad; border-radius: 999px; padding: 6px 9px; font: 10px 'DM Mono', monospace; }
+    .scan-mode.live { color: var(--green); background: #e7f7ed; border-color: #cce7d4; }
+    @media (max-width: 860px) { .ai-triad { grid-template-columns: 1fr; } }
     @media (max-width: 860px) { .hero, .work-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -118,6 +133,12 @@
       </aside>
     </section>
 
+    <section class="ai-triad" id="ai-triage" aria-label="AI material triage">
+      <article class="ai-step"><span class="ai-step-number">01 / SEE</span><h2>Photo in</h2><p>Citizen uploads a scrap photo. The local demo classifier reads the visible material mix.</p></article>
+      <article class="ai-step"><span class="ai-step-number">02 / UNDERSTAND</span><h2>Material intelligence</h2><p>AI estimates <strong>category, weight, confidence, and contamination</strong> before a pickup is booked.</p></article>
+      <article class="ai-step"><span class="ai-step-number">03 / ACT</span><h2>Traceable handoff</h2><p>The estimate becomes a pickup payload for the collector’s route and OTP settlement flow.</p></article>
+    </section>
+
     <section class="work-grid">
       <article class="panel">
         <div class="panel-head">
@@ -138,7 +159,7 @@
           <input id="photo" type="file" accept="image/*">
         </div>
         <button class="button" id="scan">Scan materials</button>
-        <div class="result" id="scan-result"></div>
+        <div class="result" id="scan-result" aria-live="polite"></div>
       </article>
 
       <article class="panel">
@@ -168,7 +189,7 @@
     </section>
   </main>
 
-  <script src="/dashboard/citizen.js"></script>
+  <script src="/dashboard/citizen.js?v=2"></script>
 </body>
 </html>
 

@@ -12,4 +12,6 @@ def test_citizen_pickup_page_is_served() -> None:
     assert response.status_code == 200
     assert "Book collector pickup" in response.text
     assert "RWA bulk drive" in response.text
+    assert "AI material triage" in response.text
+    assert "Traceable handoff" in response.text
     assert client.get("/citizen/citizen.js").status_code == 200
