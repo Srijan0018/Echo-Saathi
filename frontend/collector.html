@@ -3,19 +3,127 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kabadiwala Connect | Collector Console</title>
+  <title>Echo Saathi | Collector Console</title>
   <link rel="stylesheet" href="/dashboard/styles.css">
   <style>
     .collector-wrap{max-width:1050px;margin:0 auto;padding:34px 5vw}.back{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.collector-head{margin:52px 0 34px}.collector-head h1{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.05em;margin:12px 0}.collector-head h1 em{color:#a4d65e;font-style:normal}.collector-head .notice{color:#9fb7ae}.dark-card{background:#102a24;color:#eff9ee;border:1px solid #234b40;border-radius:4px;padding:24px}.dark-card h2{font-size:18px;margin:8px 0 22px}.dark-card .eyebrow{color:#91b2a7}.console-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.light-card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px}.light-card h2{font-size:18px;margin:8px 0 22px}.field{display:grid;gap:7px;margin-bottom:14px}.field label{font:10px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.field input{border:1px solid var(--line);padding:12px;border-radius:4px;font:13px Manrope,sans-serif;color:var(--ink);background:#fbfcfa}.dark-card .field label{color:#91b2a7}.dark-card .field input{border-color:#386054;background:#193a31;color:#eff9ee}.button{border:0;border-radius:4px;background:var(--green);color:white;padding:13px 17px;font:700 12px Manrope,sans-serif;cursor:pointer;width:100%}.dark-card .button{background:#c9ee9d;color:#102a24}.button:disabled{opacity:.55;cursor:not-allowed}.result{margin-top:15px;padding:14px;border-radius:4px;background:#eff8ee;border:1px solid #cae8ca;font-size:12px;display:none}.result.show{display:block}.result.error{background:#fff0ec;border-color:#f0c5bb;color:#a34b40}.result strong,.result small{display:block}.result small{color:var(--muted);margin-top:5px}.dark-card .result{background:#193a31;border-color:#386054}.dark-card .result small{color:#a9c4b9}.trip{display:flex;justify-content:space-between;border-bottom:1px solid #2b5146;padding:11px 0;font:11px 'DM Mono',monospace}.trip:last-child{border:0}.trip strong{color:#c9ee9d}.otp{font:500 26px 'DM Mono',monospace;color:var(--green);letter-spacing:.14em}@media(max-width:720px){.collector-wrap{padding:24px 20px}.collector-head{margin:38px 0 26px}.console-grid{grid-template-columns:1fr}}
+    .collector-sidebar{position:fixed;inset:0 auto 0 0;width:250px;z-index:10;display:flex;flex-direction:column;padding:32px 24px;background:#102a24;color:#eaf5ee}.collector-sidebar .brand{display:flex;align-items:center;gap:11px;font-size:12px;line-height:1.25;letter-spacing:.02em}.collector-sidebar .brand strong{font-size:14px}.collector-sidebar .brand-mark{display:grid;place-items:center;width:36px;height:36px;background:#c9ee9d;color:#102a24;font:500 12px 'DM Mono',monospace;border-radius:9px}.collector-sidebar .eyebrow{margin-top:70px;color:#88a59b}.collector-sidebar nav{margin-top:20px;display:grid;gap:8px}.collector-sidebar .nav-link{color:#9db6ad;text-decoration:none;padding:12px 10px;border-radius:7px;font-size:13px;display:flex;gap:14px;align-items:center}.collector-sidebar .nav-link span{color:#668279;font:11px 'DM Mono',monospace}.collector-sidebar .nav-link.active,.collector-sidebar .nav-link:hover{color:#f4fff2;background:#1d453a}.collector-sidebar .nav-link.active span{color:#c9ee9d}.collector-sidebar .sidebar-note{margin-top:auto;display:flex;gap:10px;align-items:flex-start;padding:14px 0 4px;border-top:1px solid #315148;font-size:11px}.collector-sidebar .sidebar-note strong,.collector-sidebar .sidebar-note small{display:block}.collector-sidebar .sidebar-note small{color:#88a59b;margin-top:4px}.collector-sidebar .pulse{display:inline-block;width:8px;height:8px;margin-top:4px;border-radius:50%;background:#b6e66e;box-shadow:0 0 0 4px #b6e66e22}.collector-shell{max-width:none;margin:0 0 0 250px;padding:28px 5vw 42px}.collector-top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}.collector-brand{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #d9e7df;background:rgba(255,255,255,.72);border-radius:999px;font:500 12px 'DM Mono',monospace;color:var(--green)}.collector-brand .dot{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(23,121,90,.12)}.collector-shell .ghost-link{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.collector-shell .button{border:none;border-radius:12px;background:linear-gradient(135deg,#17795a,#1e8c67);color:#fff;padding:15px 18px;font:700 13px Manrope,sans-serif;cursor:pointer;width:100%;transition:transform .2s ease,box-shadow .2s ease;box-shadow:0 12px 20px rgba(23,121,90,.18)}.collector-shell .button:hover{transform:translateY(-1px)}.collector-shell .button:disabled{opacity:.55;cursor:not-allowed;transform:none}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin:18px 0 26px}.dark-panel,.light-panel{background:rgba(255,255,255,.84);border:1px solid #d8e6de;border-radius:20px;box-shadow:0 18px 40px rgba(17,35,28,.05);padding:26px 28px;color:var(--ink)}.dark-panel{background:linear-gradient(135deg,#12382e,#1c5a45);border-color:#1c5a45;color:#eff9ee}.dark-panel .eyebrow{color:#b7d8c9}.hero-title{margin:12px 0 14px;font-size:clamp(38px,5vw,72px);line-height:.96;letter-spacing:-.06em}.hero-title em{color:#c9ee9d;font-style:normal}.subtext{color:var(--muted);font-size:15px;line-height:1.6;max-width:560px}.dark-panel .subtext{color:#c4ddd1}.stat-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}.stat{background:#eef8f1;border:1px solid #d5eadc;border-radius:14px;padding:10px 12px;min-width:130px}.dark-panel .stat{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}.stat strong{display:block;font-size:22px;letter-spacing:-.04em}.stat small{color:var(--muted);font:10px 'DM Mono',monospace;text-transform:uppercase}.dark-panel .stat small{color:#b7d8c9}.route-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.route-grid .dark-panel,.route-grid .light-panel{padding:24px}.route-grid h2{margin:0 0 20px;font-size:23px;letter-spacing:-.04em}.collector-shell .field{display:grid;gap:7px;margin-bottom:16px}.collector-shell .field label{font:10px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.collector-shell .field input{border:1px solid #d9e7df;padding:13px 14px;border-radius:12px;font:14px Manrope,sans-serif;color:var(--ink);background:#fbfefc}.dark-panel .field input{border-color:#d9e7df;background:#fbfefc;color:var(--ink)}.collector-shell .result{margin-top:18px;background:#eef9f1;border:1px solid #cae8ca;border-radius:14px;padding:15px 16px;font-size:12px;display:none}.collector-shell .result.show{display:block}.collector-shell .result.error{color:#a34b40;background:#fff0ec;border-color:#f0c5bb}.collector-shell .result strong,.collector-shell .result small{display:block}.collector-shell .result small{color:var(--muted);margin-top:6px}.trip{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #dfeae4;padding:11px 0;font:11px 'DM Mono',monospace}.trip:last-child{border:0}.dark-panel .trip{border-color:rgba(255,255,255,.16)}.dark-panel .trip strong{color:#c9ee9d}.dark-panel .trip span{color:#eaf5ee}@media(max-width:900px){.collector-sidebar{position:static;width:auto;min-height:0;padding:18px 20px}.collector-sidebar .eyebrow,.collector-sidebar .sidebar-note{display:none}.collector-sidebar nav{display:flex;gap:6px;margin-top:18px;overflow:auto}.collector-sidebar .nav-link{white-space:nowrap;padding:10px}.collector-shell{margin-left:0;padding:24px 20px 36px}.hero-grid,.route-grid{grid-template-columns:1fr}}@media(max-width:600px){.collector-top{align-items:flex-start;flex-direction:column}.collector-top>div:last-child{width:100%;justify-content:space-between}.hero-title{font-size:42px}.stat{min-width:110px}}
   </style>
 </head>
 <body>
-  <main class="collector-wrap">
-    <a class="back" href="/dashboard/">← MUNICIPAL VIEW</a>
-    <header class="collector-head"><p class="eyebrow" style="color:#17795a">Collector console / field mode</p><h1>Carry less air.<br><em>Recover more value.</em></h1><p class="notice">Plan a capacity-aware run, then close every handoff with the citizen's OTP.</p></header>
-    <section class="dark-card" style="margin-bottom:14px"><p class="eyebrow">Route optimizer</p><h2>Build today's run</h2><div class="console-grid"><div><div class="field"><label for="collector-id">Collector ID</label><input id="collector-id" placeholder="UUID from registration"></div><button class="button" id="load-inbox">Load my open pickups</button><div class="result" id="inbox-result"></div><div class="field"><label for="payload">Payload limit (kg)</label><input id="payload" value="100"></div><div class="field"><label for="volume">Volume limit (m³)</label><input id="volume" value="1.00"></div></div><div><div class="field"><label for="stops">Stops · stop_id, weight kg, volume m³</label><input id="stops" value="pickup-a,60,0.20; pickup-b,60,0.20; pickup-c,20,0.20"></div><button class="button" id="optimize">Optimize route</button><div class="result" id="route-result"></div></div></div></section>
-    <section class="light-card"><p class="eyebrow">Settlement handshake</p><h2>Assign and close a pickup</h2><div class="console-grid"><div><div class="field"><label for="pickup-id">Pickup ID</label><input id="pickup-id" placeholder="UUID from citizen request"></div><div class="field"><label for="settle-collector-id">Collector ID</label><input id="settle-collector-id" placeholder="UUID from registration"></div><button class="button" id="assign">Assign pickup to me</button><div class="result" id="assign-result"></div><div class="field"><label for="otp">Citizen OTP</label><input id="otp" inputmode="numeric" maxlength="4" placeholder="4826"></div></div><div><div class="field"><label for="material">Material code</label><input id="material" value="pet_plastic"></div><div class="field"><label for="weight">Actual weight (kg)</label><input id="weight" value="5.00"></div><div class="field"><label for="deduction">Quality deduction (%)</label><input id="deduction" value="0.00"></div><button class="button" id="settle">Verify OTP & settle</button><div class="result" id="settle-result"></div></div></div></section>
+  <aside class="collector-sidebar">
+    <div class="brand"><span class="brand-mark">ES</span><span>Echo Saathi<br><strong>Connect OS</strong></span></div>
+    <p class="eyebrow">Switch workspace</p>
+    <nav>
+      <a class="nav-link" href="/dashboard/"><span>01</span>Municipal view</a>
+      <a class="nav-link" href="/citizen/citizen.html"><span>02</span>Citizen pickup</a>
+      <a class="nav-link active" href="/collector/collector.html"><span>03</span>Collector console</a>
+      <a class="nav-link" href="/depot/depot.html"><span>04</span>Depot / recycler</a>
+      <a class="nav-link" href="/regulatory/regulatory.html"><span>05</span>Regulatory assistant</a>
+    </nav>
+    <div class="sidebar-note"><span class="pulse"></span><div><strong>Demo mode online</strong><small>Collector workflow ready</small></div></div>
+  </aside>
+  <main class="collector-shell">
+    <div class="collector-top">
+      <div class="collector-brand"><span class="dot"></span> Echo Saathi — Collector</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <a class="ghost-link" href="/dashboard/">← Municipal view</a>
+        <button id="logout" class="button" style="width:auto;padding:10px 14px;border-radius:999px;box-shadow:none;">Log out</button>
+      </div>
+    </div>
+
+    <section class="hero-grid">
+      <article class="dark-panel">
+        <p class="eyebrow">Field mode</p>
+        <h1 class="hero-title">Carry less air.<br><em>Recover more value.</em></h1>
+        <p class="subtext">Optimise every route, confirm handoff with the citizen OTP, and close the settlement in one clean field workflow.</p>
+        <div class="stat-row">
+          <div class="stat">
+            <strong>12</strong>
+            <small>Open stops</small>
+          </div>
+          <div class="stat">
+            <strong>96%</strong>
+            <small>On-time</small>
+          </div>
+          <div class="stat">
+            <strong>₹8.4k</strong>
+            <small>Today</small>
+          </div>
+        </div>
+      </article>
+
+      <aside class="dark-panel">
+        <p class="eyebrow">Route health</p>
+        <div class="trip"><strong>Avg payload</strong><span>72 kg</span></div>
+        <div class="trip"><strong>Volume used</strong><span>0.82 m³</span></div>
+        <div class="trip"><strong>Depot returns</strong><span>02</span></div>
+        <div class="trip"><strong>Trust score</strong><span>0.96</span></div>
+      </aside>
+    </section>
+
+    <section class="route-grid">
+      <article class="dark-panel">
+        <p class="eyebrow">Route optimizer</p>
+        <div class="field">
+          <label for="collector-id">Collector ID</label>
+          <input id="collector-id" placeholder="UUID from registration">
+        </div>
+        <button class="button" id="load-inbox">Load my open pickups</button>
+        <div class="result" id="inbox-result"></div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="payload">Payload limit (kg)</label>
+          <input id="payload" value="100">
+        </div>
+        <div class="field">
+          <label for="volume">Volume limit (m³)</label>
+          <input id="volume" value="1.00">
+        </div>
+        <div class="field">
+          <label for="stops">Stops · stop_id, weight_kg, volume_m3</label>
+          <input id="stops" value="pickup-a,60,0.20; pickup-b,60,0.20; pickup-c,20,0.20">
+        </div>
+        <button class="button" id="optimize">Optimize route</button>
+        <div class="result" id="route-result"></div>
+      </article>
+
+      <article class="light-panel">
+        <p class="eyebrow">Settlement handshake</p>
+        <div class="field">
+          <label for="pickup-id">Pickup ID</label>
+          <input id="pickup-id" placeholder="UUID from citizen request">
+        </div>
+        <div class="field">
+          <label for="settle-collector-id">Collector ID</label>
+          <input id="settle-collector-id" placeholder="UUID from registration">
+        </div>
+        <button class="button" id="assign">Assign pickup to me</button>
+        <div class="result" id="assign-result"></div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="otp">Citizen OTP</label>
+          <input id="otp" inputmode="numeric" maxlength="4" placeholder="4826">
+        </div>
+        <div class="field">
+          <label for="material">Material code</label>
+          <input id="material" value="pet_plastic">
+        </div>
+        <div class="field">
+          <label for="weight">Actual weight (kg)</label>
+          <input id="weight" value="5.00">
+        </div>
+        <div class="field">
+          <label for="deduction">Quality deduction (%)</label>
+          <input id="deduction" value="0.00">
+        </div>
+        <button class="button" id="settle">Verify OTP & settle</button>
+        <div class="result" id="settle-result"></div>
+      </article>
+    </section>
   </main>
+
   <script src="/dashboard/collector.js"></script>
 </body>
 </html>
+
