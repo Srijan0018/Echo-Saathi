@@ -1,5 +1,18 @@
 const result = document.querySelector('#result');
 
+function redirectIfActiveSession() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('kabadiwala_session') || 'null');
+    if (stored && stored.user && stored.user.role) {
+      window.location.href = stored.user.role === 'collector' ? '/collector/collector.html' : '/citizen/citizen.html';
+    }
+  } catch (_error) {
+    localStorage.removeItem('kabadiwala_session');
+  }
+}
+
+redirectIfActiveSession();
+
 document.querySelector('#login').addEventListener('click', async () => {
   const button = document.querySelector('#login');
   button.disabled = true;

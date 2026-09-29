@@ -1,4 +1,4 @@
-# Kabadiwala Connect OS
+# Echo Saathi OS
 
 Deterministic circular-economy operations platform for citizens, collectors, aggregators, recyclers, and municipalities.
 
