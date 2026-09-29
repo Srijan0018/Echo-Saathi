@@ -3,14 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kabadiwala Connect | Regulatory Assistant</title>
+  <title>Echo Saathi | Regulatory Assistant</title>
   <link rel="stylesheet" href="/dashboard/styles.css">
   <style>
     .rag-wrap{max-width:980px;margin:0 auto;padding:34px 5vw}.back{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.rag-head{margin:52px 0 34px}.rag-head h1{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.05em;margin:12px 0}.rag-head h1 em{color:var(--green);font-style:normal}.rag-box{background:#102a24;color:#eff9ee;border:1px solid #234b40;border-radius:4px;padding:25px}.rag-box .eyebrow{color:#9ab7ad}.ask-row{display:flex;gap:10px;margin-top:20px}.ask-row input{flex:1;border:1px solid #386054;background:#193a31;color:#eff9ee;border-radius:4px;padding:14px;font:13px Manrope,sans-serif}.button{border:0;border-radius:4px;background:#c9ee9d;color:#102a24;padding:14px 20px;font:700 12px Manrope,sans-serif;cursor:pointer}.button:disabled{opacity:.55}.suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.suggestion{border:1px solid #386054;color:#b4d2c8;background:transparent;border-radius:3px;padding:7px 9px;cursor:pointer;font:10px 'DM Mono',monospace}.answer{margin-top:14px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:24px;display:none}.answer.show{display:block}.answer h2{font-size:18px;margin:0 0 10px}.answer-copy{font-size:14px;line-height:1.7;margin:0}.citation{border-top:1px solid var(--line);padding:14px 0 0;margin-top:18px}.citation strong,.citation small{display:block}.citation strong{font-size:12px}.citation small{font:10px 'DM Mono',monospace;color:var(--green);margin:5px 0}.citation p{font-size:12px;color:var(--muted);line-height:1.5;margin:0}.empty{color:var(--muted);font-size:13px}@media(max-width:600px){.rag-wrap{padding:24px 20px}.rag-head{margin:38px 0 26px}.ask-row{display:grid}.button{width:100%}}
   </style>
 </head>
 <body>
-  <main class="rag-wrap">
+  <aside class="workspace-sidebar">
+    <div class="brand"><span class="brand-mark">ES</span><span>Echo Saathi<br><strong>Connect OS</strong></span></div>
+    <p class="eyebrow">Switch workspace</p>
+    <nav>
+      <a class="nav-link" href="/dashboard/"><span>01</span>Municipal view</a>
+      <a class="nav-link" href="/citizen/citizen.html"><span>02</span>Citizen pickup</a>
+      <a class="nav-link" href="/collector/collector.html"><span>03</span>Collector console</a>
+      <a class="nav-link" href="/depot/depot.html"><span>04</span>Depot / recycler</a>
+      <a class="nav-link active" href="/regulatory/regulatory.html"><span>05</span>Regulatory assistant</a>
+    </nav>
+    <div class="sidebar-note"><span class="pulse"></span><div><strong>Demo mode online</strong><small>Compliance index ready</small></div></div>
+  </aside>
+  <main class="rag-wrap workspace-page">
     <a class="back" href="/dashboard/">← MUNICIPAL VIEW</a>
     <header class="rag-head"><p class="eyebrow accent">Compliance desk / offline index</p><h1>Ask the rulebook<br><em>before the truck moves.</em></h1><p class="notice">Search the indexed waste-management rules and keep a citation attached to every decision.</p></header>
     <section class="rag-box"><p class="eyebrow">Regulatory query</p><div class="ask-row"><input id="query" value="What are the EPR rules for plastic packaging?" aria-label="Regulatory question"><button class="button" id="ask">Find citation</button></div><div class="suggestions"><button class="suggestion">plastic packaging EPR</button><button class="suggestion">e-waste recycler records</button><button class="suggestion">waste segregation</button></div></section>

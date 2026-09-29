@@ -3,21 +3,172 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kabadiwala Connect | Book a Pickup</title>
+  <title>Echo Saathi | Citizen Pickup</title>
   <link rel="stylesheet" href="/dashboard/styles.css">
   <style>
-    .citizen-wrap{max-width:980px;margin:0 auto;padding:34px 5vw}.back{color:var(--green);text-decoration:none;font:11px 'DM Mono',monospace}.citizen-head{margin:52px 0 34px}.citizen-head h1{font-size:clamp(36px,5vw,62px);line-height:1;letter-spacing:-.05em;margin:12px 0}.citizen-head h1 em{color:var(--green);font-style:normal}.work-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-panel{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px}.form-panel h2{font-size:18px;margin:8px 0 22px}.field{display:grid;gap:7px;margin-bottom:16px}.field label{font:10px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.field input{border:1px solid var(--line);padding:13px;border-radius:4px;font:13px Manrope,sans-serif;color:var(--ink);background:#fbfcfa}.file-box{border:1px dashed #a9c6b3;border-radius:4px;background:#f1f8f1;padding:24px;text-align:center;margin-bottom:16px}.file-box input{max-width:100%;font-size:11px}.button{border:0;border-radius:4px;background:var(--green);color:white;padding:14px 18px;font:700 12px Manrope,sans-serif;cursor:pointer;width:100%}.button:disabled{opacity:.55;cursor:not-allowed}.result{margin-top:16px;background:#eff8ee;border:1px solid #cae8ca;padding:15px;border-radius:4px;font-size:12px;display:none}.result.show{display:block}.result strong,.result small{display:block}.result small{color:var(--muted);margin-top:5px}.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.chip{background:var(--mint);color:var(--green);border-radius:3px;padding:7px 9px;font:10px 'DM Mono',monospace}.notice{color:var(--muted);font-size:12px;line-height:1.6}.error{color:#a34b40;background:#fff0ec;border-color:#f0c5bb}.otp{font:500 26px 'DM Mono',monospace;color:var(--green);letter-spacing:.15em}@media(max-width:700px){.citizen-wrap{padding:24px 20px}.citizen-head{margin:38px 0 26px}.work-grid{grid-template-columns:1fr}}
+    body { background: linear-gradient(180deg, #f5faf7 0%, #edf5f0 100%); }
+    .citizen-shell { max-width: 1180px; margin: 0 auto; padding: 28px 5vw 42px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .brand-pill { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #d9e7df; background: rgba(255,255,255,0.72); border-radius: 999px; font: 500 12px 'DM Mono', monospace; color: var(--green); }
+    .brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(23,121,90,0.12); }
+    .ghost-link { color: var(--green); text-decoration: none; font: 11px 'DM Mono', monospace; }
+    .hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; margin: 18px 0 26px; }
+    .hero-card, .panel { background: rgba(255,255,255,0.84); border: 1px solid #d8e6de; border-radius: 20px; box-shadow: 0 18px 40px rgba(17, 35, 28, 0.05); }
+    .hero-card { padding: 26px 28px; }
+    .eyebrow { margin: 0; color: var(--green); font: 600 10px 'DM Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
+    .hero-card h1 { margin: 12px 0 14px; font-size: clamp(38px, 5vw, 72px); line-height: .96; letter-spacing: -.06em; }
+    .hero-card h1 em { color: var(--green); font-style: normal; }
+    .subtext { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 560px; }
+    .stat-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+    .stat { background: #eef8f1; border: 1px solid #d5eadc; border-radius: 14px; padding: 10px 12px; min-width: 130px; }
+    .stat strong { display: block; font-size: 22px; letter-spacing: -.04em; }
+    .stat small { color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+    .summary-card { padding: 22px; display: flex; flex-direction: column; justify-content: space-between; }
+    .summary-top { display: flex; justify-content: space-between; align-items: center; }
+    .mini-badge { background: #e6f7ed; color: var(--green); padding: 7px 9px; border-radius: 999px; font: 600 10px 'DM Mono', monospace; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .summary-box { background: #f8fbf9; border: 1px solid #dfeae4; border-radius: 14px; padding: 12px; }
+    .summary-box strong { display: block; font-size: 20px; letter-spacing: -.04em; margin-top: 10px; }
+    .summary-box small { color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+    .work-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .panel { padding: 24px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .panel h2 { margin: 0; font-size: 23px; letter-spacing: -.04em; }
+    .step { color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+    .field { display: grid; gap: 7px; margin-bottom: 16px; }
+    .field label { font: 10px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .field input { border: 1px solid #d9e7df; padding: 13px 14px; border-radius: 12px; font: 14px Manrope, sans-serif; color: var(--ink); background: #fbfefc; }
+    .field input:focus { outline: 2px solid rgba(23,121,90,0.18); border-color: var(--green); }
+    .file-box { border: 1.5px dashed #a9c6b3; background: linear-gradient(180deg, #f3faf5, #edf8f1); border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 16px; }
+    .file-box p { margin: 0 0 12px; color: var(--muted); }
+    .file-box input { max-width: 100%; font-size: 12px; }
+    .checkbox { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 600; }
+    .checkbox input { width: 16px; height: 16px; }
+    .button { border: none; border-radius: 12px; background: linear-gradient(135deg, #17795a, #1e8c67); color: white; padding: 15px 18px; font: 700 13px Manrope, sans-serif; cursor: pointer; width: 100%; transition: transform .2s ease, box-shadow .2s ease; box-shadow: 0 12px 20px rgba(23,121,90,0.18); }
+    .button:hover { transform: translateY(-1px); }
+    .button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .result { margin-top: 18px; background: #eef9f1; border: 1px solid #cae8ca; border-radius: 14px; padding: 15px 16px; font-size: 12px; display: none; }
+    .result.show { display: block; }
+    .result.error { color: #a34b40; background: #fff0ec; border-color: #f0c5bb; }
+    .result strong, .result small { display: block; }
+    .result small { color: var(--muted); margin-top: 6px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip { background: #e7f7ed; color: var(--green); border-radius: 8px; padding: 7px 9px; font: 600 10px 'DM Mono', monospace; }
+    .otp { margin-top: 10px; font: 700 26px 'DM Mono', monospace; color: var(--green); letter-spacing: .18em; }
+    @media (max-width: 860px) { .hero, .work-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <main class="citizen-wrap">
-    <a class="back" href="/dashboard/">← MUNICIPAL VIEW</a>
-    <header class="citizen-head"><p class="eyebrow accent">Citizen pickup desk</p><h1>Turn a pile into<br><em>a verified handoff.</em></h1><p class="notice">Scan your recyclables, see the indicative mix, and request a collector pickup.</p></header>
+  <aside class="workspace-sidebar">
+    <div class="brand"><span class="brand-mark">ES</span><span>Echo Saathi<br><strong>Connect OS</strong></span></div>
+    <p class="eyebrow">Switch workspace</p>
+    <nav>
+      <a class="nav-link" href="/dashboard/"><span>01</span>Municipal view</a>
+      <a class="nav-link active" href="/citizen/citizen.html"><span>02</span>Citizen pickup</a>
+      <a class="nav-link" href="/collector/collector.html"><span>03</span>Collector console</a>
+      <a class="nav-link" href="/depot/depot.html"><span>04</span>Depot / recycler</a>
+      <a class="nav-link" href="/regulatory/regulatory.html"><span>05</span>Regulatory assistant</a>
+    </nav>
+    <div class="sidebar-note"><span class="pulse"></span><div><strong>Demo mode online</strong><small>Citizen workflow ready</small></div></div>
+  </aside>
+  <main class="citizen-shell workspace-page">
+    <div class="topbar">
+      <div class="brand-pill"><span class="brand-dot"></span> Echo Saathi</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <a class="ghost-link" href="/dashboard/">← Municipal view</a>
+        <button id="logout" class="button" style="width:auto;padding:10px 14px;border-radius:999px;box-shadow:none;">Log out</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <article class="hero-card">
+        <p class="eyebrow">Citizen pickup desk</p>
+        <h1>Turn a pile<br><em>into verified value.</em></h1>
+        <p class="subtext">Book a pickup, classify recyclable material with confidence, and complete the handoff with a secure OTP payment flow.</p>
+        <div class="stat-row">
+          <div class="stat"><strong>92%</strong><small>Material match</small></div>
+          <div class="stat"><strong>2.4 hrs</strong><small>Average pickup</small></div>
+          <div class="stat"><strong>₹248</strong><small>Expected payout</small></div>
+        </div>
+      </article>
+
+      <aside class="hero-card summary-card">
+        <div class="summary-top">
+          <p class="eyebrow">Live impact</p>
+          <span class="mini-badge">Today</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-box">
+            <small>Recovered</small>
+            <strong>1.2T</strong>
+          </div>
+          <div class="summary-box">
+            <small>CO₂ saved</small>
+            <strong>420 kg</strong>
+          </div>
+          <div class="summary-box">
+            <small>Collectors</small>
+            <strong>18</strong>
+          </div>
+          <div class="summary-box">
+            <small>RWA drives</small>
+            <strong>6</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
     <section class="work-grid">
-      <article class="form-panel"><p class="eyebrow">Step 01 / Identify</p><h2>Tell us about you</h2><div class="field"><label for="name">Full name</label><input id="name" value="Asha Devi" autocomplete="name"></div><div class="field"><label for="phone">Mobile number</label><input id="phone" value="+919876543210" inputmode="tel"></div><div class="file-box"><p class="notice">Add a photo of the recyclables</p><input id="photo" type="file" accept="image/*"></div><button class="button" id="scan">Scan materials</button><div class="result" id="scan-result"></div></article>
-      <article class="form-panel"><p class="eyebrow">Step 02 / Arrange</p><h2>Request your pickup</h2><p class="notice">Your collector will confirm the final scale reading with a four-digit citizen OTP.</p><div class="field"><label for="latitude">Latitude</label><input id="latitude" value="12.971600"></div><div class="field"><label for="longitude">Longitude</label><input id="longitude" value="77.594600"></div><div class="field"><label><input id="rwa-drive" type="checkbox"> This is an RWA bulk drive</label></div><div class="field" id="rwa-name-field" hidden><label for="rwa-name">RWA name</label><input id="rwa-name" placeholder="Green Meadows RWA"></div><button class="button" id="book" disabled>Book collector pickup</button><div class="result" id="book-result"></div></article>
+      <article class="panel">
+        <div class="panel-head">
+          <h2>1. Scan & classify</h2>
+          <span class="step">Step 01</span>
+        </div>
+
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" value="Asha Devi" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="phone">Mobile number</label>
+          <input id="phone" value="+919876543210" inputmode="tel">
+        </div>
+        <div class="file-box">
+          <p>Upload a photo of your scrap pile</p>
+          <input id="photo" type="file" accept="image/*">
+        </div>
+        <button class="button" id="scan">Scan materials</button>
+        <div class="result" id="scan-result"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>2. Book pickup</h2>
+          <span class="step">Step 02</span>
+        </div>
+
+        <div class="field">
+          <label for="latitude">Latitude</label>
+          <input id="latitude" value="12.971600">
+        </div>
+        <div class="field">
+          <label for="longitude">Longitude</label>
+          <input id="longitude" value="77.594600">
+        </div>
+        <div class="field">
+          <label class="checkbox"><input id="rwa-drive" type="checkbox"> This is an RWA bulk drive</label>
+        </div>
+        <div class="field" id="rwa-name-field" hidden>
+          <label for="rwa-name">RWA name</label>
+          <input id="rwa-name" placeholder="Green Meadows RWA">
+        </div>
+        <button class="button" id="book" disabled>Book collector pickup</button>
+        <div class="result" id="book-result"></div>
+      </article>
     </section>
   </main>
+
   <script src="/dashboard/citizen.js"></script>
 </body>
 </html>
+
