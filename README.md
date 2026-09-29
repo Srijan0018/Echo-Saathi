@@ -95,9 +95,3 @@ Or:
 EcoSaathi does not replace the existing recycling network. It makes it **more visible, efficient, trusted, and traceable**.
 
 > **EcoSaathi turns informal collection into a measurable circular-economy system.**
-
-- **Live prototype:** [Add deployed link]
-- **GitHub:** [Add repository link]
-- **Team:** GreenX
-- **Problem Statement:** SIH26229 — Kabadiwala
-- **Theme:** Clean & Green Technology
